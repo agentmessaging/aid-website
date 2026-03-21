@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Identity (AID) - Authentication & Authorization for AI Agents | Open Source</title>
+  <meta name="description" content="AID is an open protocol for AI agent authentication and authorization. Agents prove identity with Ed25519 signatures and receive scoped JWT tokens via OAuth 2.0. No passwords, no API keys, no secrets to rotate.">
+  <meta name="keywords" content="AI agent authentication, agent identity, agent authorization, OAuth for agents, Ed25519, JWT tokens, non-human identity, NHI, agent credentials, AID protocol, AMP, agent messaging, machine identity, workload identity">
+  <meta name="author" content="Agent Messaging">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <link rel="canonical" href="https://agentids.org">
+
+  <!-- Additional SEO -->
+  <meta name="theme-color" content="#0f766e">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="AID">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Agent Identity (AID) - Authentication & Authorization for AI Agents">
+  <meta property="og:description" content="Open protocol for AI agent authentication. Ed25519 cryptographic identity, OAuth 2.0 token exchange, scoped JWT tokens. No passwords, no API keys.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://agentids.org">
+  <meta property="og:site_name" content="Agent Identity">
+  <meta property="og:locale" content="en_US">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@agentmessaging">
+  <meta name="twitter:title" content="Agent Identity (AID) - Authentication & Authorization for AI Agents">
+  <meta name="twitter:description" content="Open protocol for AI agent authentication. Ed25519 identity, OAuth 2.0 token exchange, scoped JWTs. No passwords, no API keys.">
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Agent Identity",
+    "alternateName": "AID",
+    "description": "An open protocol for AI agent authentication and authorization. Agents prove their identity using Ed25519 cryptographic signatures and receive scoped JWT tokens via a custom OAuth 2.0 grant type. No passwords, no API keys, no secrets to rotate.",
+    "url": "https://agentids.org",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "license": "https://opensource.org/licenses/MIT",
+    "author": {
+      "@type": "Organization",
+      "name": "Agent Messaging",
+      "url": "https://agentmessaging.org"
+    },
+    "codeRepository": "https://github.com/agentmessaging/agent-identity",
+    "programmingLanguage": ["Bash", "Ruby", "Any"],
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "featureList": [
+      "Ed25519 cryptographic agent identity - no passwords or API keys",
+      "OAuth 2.0 custom grant type (urn:aid:agent-identity)",
+      "Scoped RS256 JWT tokens with role-based permissions",
+      "Proof of possession with 5-minute replay protection",
+      "Multi-server registration - one identity, many APIs",
+      "Token caching with scope-aware invalidation",
+      "OIDC-compatible discovery and JWKS endpoints",
+      "Built on the Agent Messaging Protocol (AMP) identity layer",
+      "Open source MIT license"
+    ]
+  }
+  </script>
+
+  <!-- JSON-LD FAQ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is Agent Identity (AID)?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "AID is an open protocol that lets AI agents authenticate with OAuth 2.0 servers using Ed25519 cryptographic identity. Instead of passwords or API keys, an agent presents a signed identity document and proof of possession of its private key. The server verifies the signature and issues a scoped JWT token."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How is AID different from API keys or service accounts?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "API keys are shared secrets that can leak. Service accounts use static credentials that need rotation. AID uses asymmetric Ed25519 cryptography - the private key never leaves the agent's machine. There's no secret to rotate, no credential to leak. The agent proves identity by signing a challenge, not by presenting a password."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What is the relationship between AID and AMP?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "AMP (Agent Messaging Protocol) provides the identity layer - Ed25519 keypairs, addresses, and fingerprints. AID builds on top of AMP to add authentication and authorization. Think of AMP as 'who you are' and AID as 'proving who you are and what you can do'."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What tokens does AID issue?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "AID issues standard RS256 JWT tokens that work with any JWT-validating API. Tokens include scoped permissions based on the agent's assigned role, and are compatible with OIDC discovery and JWKS endpoints for seamless integration with API gateways like AWS API Gateway."
+        }
+      }
+    ]
+  }
+  </script>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Space Grotesk', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              200: '#99f6e4',
+              300: '#5eead4',
+              400: '#2dd4bf',
+              500: '#14b8a6',
+              600: '#0d9488',
+              700: '#0f766e',
+              800: '#115e59',
+              900: '#134e4a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .gradient-text {
+      background: linear-gradient(135deg, #0f766e 0%, #115e59 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-gradient {
+      background: radial-gradient(ellipse at top, rgba(20, 184, 166, 0.06) 0%, transparent 50%),
+                  radial-gradient(ellipse at bottom right, rgba(15, 118, 110, 0.04) 0%, transparent 50%);
+    }
+    .code-block {
+      background: #1e293b;
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-900 font-sans antialiased">
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:shadow-lg">Skip to content</a>
+
+  <!-- Navigation -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 md:px-6 py-3">
+      <div class="flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2 text-base md:text-xl font-semibold">
+          <span class="text-teal-700 font-mono font-bold">{AID}</span>
+          <span class="hidden sm:inline">Agent Identity</span>
+          <span class="sm:hidden">AID</span>
+        </a>
+        <div class="flex items-center gap-3 md:gap-6">
+          <a href="#how-it-works" class="hidden md:block text-slate-900 hover:text-teal-700 transition-colors">How it Works</a>
+          <a href="#features" class="hidden md:block text-slate-900 hover:text-teal-700 transition-colors">Features</a>
+          <a href="#protocol" class="hidden md:block text-slate-900 hover:text-teal-700 transition-colors">Protocol</a>
+          <a href="https://agentmessaging.org" class="hidden sm:block text-slate-900 hover:text-teal-700 transition-colors text-sm md:text-base">AMP</a>
+          <a href="https://github.com/agentmessaging/agent-identity" class="text-slate-900 hover:text-teal-700 transition-colors">
+            <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main-content">
+  <!-- Hero -->
+  <section class="hero-gradient pt-20 md:pt-24 pb-12 md:pb-20">
+    <div class="max-w-6xl mx-auto px-4 md:px-6">
+      <div class="max-w-3xl">
+        <div class="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 rounded-full px-3 py-1 text-xs md:text-sm text-teal-800 mb-4 md:mb-6">
+          <span class="w-1.5 h-1.5 md:w-2 md:h-2 bg-teal-500 rounded-full animate-pulse"></span>
+          v0.1.0 &mdash; built on AMP
+        </div>
+
+        <h1 class="text-3xl md:text-5xl lg:text-7xl font-bold leading-tight mb-4 md:mb-6">
+          <span class="gradient-text">Identity</span> for<br>AI Agents
+        </h1>
+
+        <p class="text-base md:text-xl text-slate-600 mb-6 md:mb-8 leading-relaxed">
+          Open protocol for AI agent authentication and authorization.
+          Ed25519 cryptographic identity, OAuth 2.0 token exchange, scoped JWTs.
+          No passwords. No API keys. No secrets to rotate.
+        </p>
+
+        <div class="flex flex-wrap gap-3 md:gap-4 mb-8 md:mb-12">
+          <a href="https://github.com/agentmessaging/agent-identity" class="bg-teal-700 hover:bg-teal-800 text-white px-4 md:px-6 py-2.5 md:py-3 rounded-lg font-medium transition-colors inline-flex items-center gap-2 text-sm md:text-base">
+            Get Started
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+          </a>
+          <a href="#how-it-works" class="bg-white hover:bg-slate-50 border border-slate-300 px-4 md:px-6 py-2.5 md:py-3 rounded-lg font-medium transition-colors text-sm md:text-base">
+            How it Works
+          </a>
+        </div>
+
+        <!-- Code example -->
+        <div class="code-block rounded-lg md:rounded-xl p-3 md:p-6 font-mono text-xs md:text-sm overflow-x-auto shadow-xl">
+          <div class="text-slate-500 mb-2"># Agent authenticates with an OAuth server</div>
+          <div class="mb-1">
+            <span class="text-green-400">$</span>
+            <span class="text-slate-300"> aid-token --auth https://auth.example.com/tenant</span>
+          </div>
+          <div class="text-slate-500 mb-3"></div>
+          <div class="text-teal-400 mb-1">Token obtained</div>
+          <div class="text-slate-500 mb-1"></div>
+          <div class="pl-2 md:pl-4">
+            <span class="text-slate-400">Auth:       </span>
+            <span class="text-green-400">https://auth.example.com/tenant</span>
+          </div>
+          <div class="pl-2 md:pl-4">
+            <span class="text-slate-400">Scope:      </span>
+            <span class="text-amber-400">files:read files:write content:read</span>
+          </div>
+          <div class="pl-2 md:pl-4">
+            <span class="text-slate-400">Expires in: </span>
+            <span class="text-purple-400">3600s</span>
+          </div>
+          <div class="pl-2 md:pl-4">
+            <span class="text-slate-400">Agent:      </span>
+            <span class="text-green-400">my-agent@acme.crabmail.ai</span>
+          </div>
+          <div class="text-slate-500 mt-3 mb-2"># Use the JWT with any API</div>
+          <div>
+            <span class="text-green-400">$</span>
+            <span class="text-slate-300"> curl -H "Authorization: Bearer $(aid-token -a ... -q)" \</span>
+          </div>
+          <div class="pl-4">
+            <span class="text-slate-300">https://api.example.com/files</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- The Problem -->
+  <section class="py-12 md:py-24 bg-slate-50 border-t border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 md:px-6">
+      <h2 class="text-2xl md:text-4xl font-bold text-center mb-3 md:mb-4">The Problem</h2>
+      <p class="text-slate-600 text-center text-sm md:text-base max-w-2xl mx-auto mb-8 md:mb-12">AI agents need API access. Current solutions are broken.</p>
+
+      <div class="grid gap-4 md:grid-cols-3 md:gap-6 mb-8">
+        <div class="bg-white border border-red-200 rounded-xl p-5 md:p-8 shadow-sm">
+          <div class="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+          </div>
+          <h3 class="text-lg font-semibold mb-2 text-red-900">Shared API Keys</h3>
+          <p class="text-sm text-red-700">Static secrets that leak. No way to know which agent used the key. Can't scope per-agent. Rotation is manual and error-prone.</p>
+        </div>
+
+        <div class="bg-white border border-red-200 rounded-xl p-5 md:p-8 shadow-sm">
+          <div class="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+          </div>
+          <h3 class="text-lg font-semibold mb-2 text-red-900">Borrowed User Tokens</h3>
+          <p class="text-sm text-red-700">Agent acts as the human. No audit trail for agent vs. human actions. Over-privileged &mdash; agent gets all of the user's permissions.</p>
+        </div>
+
+        <div class="bg-white border border-red-200 rounded-xl p-5 md:p-8 shadow-sm">
+          <div class="w-10 h-10 bg-red-50 rounded-lg flex items-center justify-center mb-4">
+            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          </div>
+          <h3 class="text-lg font-semibold mb-2 text-red-900">Service Accounts</h3>
+          <p class="text-sm text-red-700">One service account per agent doesn't scale. Credentials need rotation. No cryptographic identity &mdash; just username/password with extra steps.</p>
+        </div>
+      </div>
+
+      <!-- The Solution -->
+      <div class="bg-teal-50 border border-teal-200 rounded-xl md:rounded-2xl p-5 md:p-8">
+        <h3 class="text-lg md:text-xl font-semibold mb-4 text-teal-900">AID: Identity is the Credential</h3>
+        <p class="text-teal-800 text-sm md:text-base mb-4">With AID, the agent's Ed25519 keypair <em>is</em> its credential. No shared secrets. No passwords. No rotation schedules. The private key never leaves the agent's machine.</p>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white/60 rounded-lg p-4">
+            <div class="font-semibold text-teal-900 mb-1">Cryptographic Identity</div>
+            <p class="text-sm text-teal-700">Ed25519 keypair = identity. Nothing to leak, nothing to rotate.</p>
+          </div>
+          <div class="bg-white/60 rounded-lg p-4">
+            <div class="font-semibold text-teal-900 mb-1">Per-Agent Audit Trail</div>
+            <p class="text-sm text-teal-700">Every token identifies which agent requested it. Full accountability.</p>
+          </div>
+          <div class="bg-white/60 rounded-lg p-4">
+            <div class="font-semibold text-teal-900 mb-1">Scoped Permissions</div>
+            <p class="text-sm text-teal-700">Role-based scopes. Each agent gets only the access it needs.</p>
+          </div>
+          <div class="bg-white/60 rounded-lg p-4">
+            <div class="font-semibold text-teal-900 mb-1">Standard JWTs</div>
+            <p class="text-sm text-teal-700">RS256 tokens work with any API, any gateway, any language.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it Works -->
+  <section id="how-it-works" class="py-12 md:py-24 border-t border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 md:px-6">
+      <h2 class="text-2xl md:text-4xl font-bold text-center mb-3 md:mb-4">How it Works</h2>
+      <p class="text-slate-600 text-center text-sm md:text-base max-w-2xl mx-auto mb-8 md:mb-16">Three steps. No passwords. Standard OAuth 2.0.</p>
+
+      <div class="grid gap-4 md:grid-cols-3 md:gap-8 mb-8 md:mb-12">
+        <!-- Step 1 -->
+        <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-5 md:p-8 shadow-sm">
+          <div class="w-10 h-10 bg-teal-50 rounded-lg flex items-center justify-center mb-4 text-teal-700 font-bold font-mono">01</div>
+          <h3 class="text-lg md:text-xl font-semibold mb-2">Register</h3>
+          <p class="text-slate-600 text-sm mb-4">One-time setup. Admin registers the agent's public key with the auth server and assigns a role with scoped permissions.</p>
+          <div class="code-block rounded-lg p-3 font-mono text-xs overflow-x-auto">
+            <span class="text-green-400">$</span>
+            <span class="text-slate-300"> aid-register \</span><br>
+            <span class="text-slate-300">    --auth https://auth.example.com/acme \</span><br>
+            <span class="text-slate-300">    --token eyJ... --role-id 2</span>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-5 md:p-8 shadow-sm">
+          <div class="w-10 h-10 bg-teal-50 rounded-lg flex items-center justify-center mb-4 text-teal-700 font-bold font-mono">02</div>
+          <h3 class="text-lg md:text-xl font-semibold mb-2">Authenticate</h3>
+          <p class="text-slate-600 text-sm mb-4">Agent signs its identity document and proof of possession, sends them to the OAuth token endpoint.</p>
+          <div class="code-block rounded-lg p-3 font-mono text-xs overflow-x-auto">
+            <span class="text-green-400">$</span>
+            <span class="text-slate-300"> aid-token \</span><br>
+            <span class="text-slate-300">    --auth https://auth.example.com/acme</span><br>
+            <span class="text-teal-400 mt-1 block">Token obtained (3600s)</span>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-5 md:p-8 shadow-sm">
+          <div class="w-10 h-10 bg-teal-50 rounded-lg flex items-center justify-center mb-4 text-teal-700 font-bold font-mono">03</div>
+          <h3 class="text-lg md:text-xl font-semibold mb-2">Access APIs</h3>
+          <p class="text-slate-600 text-sm mb-4">Use the JWT with any API that validates tokens. Standard Bearer auth. Works with AWS Gateway, Cloudflare, nginx, anything.</p>
+          <div class="code-block rounded-lg p-3 font-mono text-xs overflow-x-auto">
+            <span class="text-green-400">$</span>
+            <span class="text-slate-300"> curl -H "Authorization: \</span><br>
+            <span class="text-slate-300">    Bearer $TOKEN" \</span><br>
+            <span class="text-slate-300">    https://api.example.com/files</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Flow diagram -->
+      <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-4 md:p-8 shadow-sm">
+        <h3 class="text-lg md:text-xl font-semibold mb-4 md:mb-6">OAuth 2.0 Token Exchange Flow</h3>
+        <div class="code-block rounded-lg md:rounded-xl p-3 md:p-6 font-mono text-xs md:text-sm overflow-x-auto">
+          <div class="text-slate-500">POST /oauth/token</div>
+          <div class="text-slate-500">Content-Type: application/x-www-form-urlencoded</div>
+          <div class="text-slate-500 mb-3"></div>
+          <div class="mb-1">
+            <span class="text-amber-400">grant_type</span><span class="text-slate-500">=</span><span class="text-green-400">urn:aid:agent-identity</span>
+          </div>
+          <div class="mb-1">
+            <span class="text-amber-400">&agent_identity</span><span class="text-slate-500">=</span><span class="text-purple-400">&lt;base64url-signed-identity&gt;</span>
+          </div>
+          <div class="mb-1">
+            <span class="text-amber-400">&proof</span><span class="text-slate-500">=</span><span class="text-purple-400">&lt;base64url-proof-of-possession&gt;</span>
+          </div>
+          <div class="mb-1">
+            <span class="text-amber-400">&scope</span><span class="text-slate-500">=</span><span class="text-green-400">files:read files:write</span>
+          </div>
+          <div class="text-slate-500 mt-4 mb-2">Response:</div>
+          <div class="text-slate-500">{</div>
+          <div class="pl-4">
+            <span class="text-amber-400">"access_token"</span><span class="text-slate-500">: </span><span class="text-green-400">"eyJhbGciOiJSUzI1NiJ9..."</span><span class="text-slate-500">,</span>
+          </div>
+          <div class="pl-4">
+            <span class="text-amber-400">"token_type"</span><span class="text-slate-500">: </span><span class="text-green-400">"Bearer"</span><span class="text-slate-500">,</span>
+          </div>
+          <div class="pl-4">
+            <span class="text-amber-400">"expires_in"</span><span class="text-slate-500">: </span><span class="text-purple-400">3600</span><span class="text-slate-500">,</span>
+          </div>
+          <div class="pl-4">
+            <span class="text-amber-400">"scope"</span><span class="text-slate-500">: </span><span class="text-green-400">"files:read files:write"</span>
+          </div>
+          <div class="text-slate-500">}</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="py-12 md:py-24 bg-slate-50 border-t border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 md:px-6">
+      <h2 class="text-2xl md:text-4xl font-bold text-center mb-3 md:mb-4">Why AID?</h2>
+      <p class="text-slate-600 text-center text-sm md:text-base max-w-2xl mx-auto mb-8 md:mb-16">Built for the $11B non-human identity market. Open, standards-based, cloud-agnostic.</p>
+
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 md:gap-8">
+        <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-5 md:p-8 shadow-sm">
+          <div class="w-10 h-10 md:w-12 md:h-12 bg-teal-50 rounded-lg md:rounded-xl flex items-center justify-center mb-4 md:mb-6">
+            <svg class="w-5 h-5 md:w-6 md:h-6 text-teal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg md:text-xl font-semibold mb-2 md:mb-3">No Shared Secrets</h3>
+          <p class="text-slate-600 text-sm md:text-base">Ed25519 asymmetric crypto. Private key never leaves the agent. Nothing to leak, nothing to rotate.</p>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-5 md:p-8 shadow-sm">
+          <div class="w-10 h-10 md:w-12 md:h-12 bg-teal-50 rounded-lg md:rounded-xl flex items-center justify-center mb-4 md:mb-6">
+            <svg class="w-5 h-5 md:w-6 md:h-6 text-teal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg md:text-xl font-semibold mb-2 md:mb-3">Replay Protected</h3>
+          <p class="text-slate-600 text-sm md:text-base">Proof of possession with timestamps. 5-minute validity window prevents replay attacks.</p>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-5 md:p-8 shadow-sm">
+          <div class="w-10 h-10 md:w-12 md:h-12 bg-teal-50 rounded-lg md:rounded-xl flex items-center justify-center mb-4 md:mb-6">
+            <svg class="w-5 h-5 md:w-6 md:h-6 text-teal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg md:text-xl font-semibold mb-2 md:mb-3">Role-Based Scopes</h3>
+          <p class="text-slate-600 text-sm md:text-base">Each agent gets a role with specific permissions. Request only the scopes you need. Least privilege by default.</p>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-5 md:p-8 shadow-sm">
+          <div class="w-10 h-10 md:w-12 md:h-12 bg-teal-50 rounded-lg md:rounded-xl flex items-center justify-center mb-4 md:mb-6">
+            <svg class="w-5 h-5 md:w-6 md:h-6 text-teal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg md:text-xl font-semibold mb-2 md:mb-3">Multi-Server</h3>
+          <p class="text-slate-600 text-sm md:text-base">One identity, many auth servers. Register with multiple APIs. Different roles, different scopes, same keypair.</p>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-5 md:p-8 shadow-sm">
+          <div class="w-10 h-10 md:w-12 md:h-12 bg-teal-50 rounded-lg md:rounded-xl flex items-center justify-center mb-4 md:mb-6">
+            <svg class="w-5 h-5 md:w-6 md:h-6 text-teal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg md:text-xl font-semibold mb-2 md:mb-3">Standard OAuth 2.0</h3>
+          <p class="text-slate-600 text-sm md:text-base">Custom grant type on standard OAuth. RS256 JWTs. OIDC discovery. JWKS endpoints. Works with existing infrastructure.</p>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-5 md:p-8 shadow-sm">
+          <div class="w-10 h-10 md:w-12 md:h-12 bg-teal-50 rounded-lg md:rounded-xl flex items-center justify-center mb-4 md:mb-6">
+            <svg class="w-5 h-5 md:w-6 md:h-6 text-teal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg md:text-xl font-semibold mb-2 md:mb-3">Token Caching</h3>
+          <p class="text-slate-600 text-sm md:text-base">Automatic local token cache. Scope-aware. 60-second buffer before expiry. Skip with --no-cache when needed.</p>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-5 md:p-8 shadow-sm">
+          <div class="w-10 h-10 md:w-12 md:h-12 bg-teal-50 rounded-lg md:rounded-xl flex items-center justify-center mb-4 md:mb-6">
+            <svg class="w-5 h-5 md:w-6 md:h-6 text-teal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg md:text-xl font-semibold mb-2 md:mb-3">Full Audit Trail</h3>
+          <p class="text-slate-600 text-sm md:text-base">Every token request tracked. Agent address, timestamp, scope. Know exactly which agent did what, when.</p>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-5 md:p-8 shadow-sm">
+          <div class="w-10 h-10 md:w-12 md:h-12 bg-teal-50 rounded-lg md:rounded-xl flex items-center justify-center mb-4 md:mb-6">
+            <svg class="w-5 h-5 md:w-6 md:h-6 text-teal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+          </div>
+          <h3 class="text-lg md:text-xl font-semibold mb-2 md:mb-3">Cloud Agnostic</h3>
+          <p class="text-slate-600 text-sm md:text-base">Not tied to AWS, Azure, or GCP. Works with any OAuth 2.0 server. Open protocol, open source, MIT licensed.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Protocol -->
+  <section id="protocol" class="py-12 md:py-24 border-t border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 md:px-6">
+      <h2 class="text-2xl md:text-4xl font-bold text-center mb-3 md:mb-4">The Protocol</h2>
+      <p class="text-slate-600 text-center text-sm md:text-base max-w-2xl mx-auto mb-8 md:mb-16">AID extends OAuth 2.0 with a single custom grant type. Everything else is standard.</p>
+
+      <!-- Agent Identity Document -->
+      <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-4 md:p-8 shadow-sm mb-6 md:mb-8">
+        <h3 class="text-lg md:text-xl font-semibold mb-4 md:mb-6">Agent Identity Document</h3>
+        <p class="text-slate-600 text-sm mb-4">A signed JSON document containing the agent's public key, address, and fingerprint. The agent signs it with its Ed25519 private key to prove ownership.</p>
+        <div class="code-block rounded-lg md:rounded-xl p-3 md:p-6 font-mono text-xs md:text-sm overflow-x-auto">
+          <div class="text-slate-500">{</div>
+          <div class="pl-4">
+            <span class="text-amber-400">"aid_version"</span><span class="text-slate-500">: </span><span class="text-green-400">"1.0"</span><span class="text-slate-500">,</span>
+          </div>
+          <div class="pl-4">
+            <span class="text-amber-400">"address"</span><span class="text-slate-500">: </span><span class="text-green-400">"my-agent@acme.crabmail.ai"</span><span class="text-slate-500">,</span>
+          </div>
+          <div class="pl-4">
+            <span class="text-amber-400">"public_key"</span><span class="text-slate-500">: </span><span class="text-green-400">"-----BEGIN PUBLIC KEY-----\n..."</span><span class="text-slate-500">,</span>
+          </div>
+          <div class="pl-4">
+            <span class="text-amber-400">"key_algorithm"</span><span class="text-slate-500">: </span><span class="text-green-400">"Ed25519"</span><span class="text-slate-500">,</span>
+          </div>
+          <div class="pl-4">
+            <span class="text-amber-400">"fingerprint"</span><span class="text-slate-500">: </span><span class="text-green-400">"SHA256:abc123..."</span><span class="text-slate-500">,</span>
+          </div>
+          <div class="pl-4">
+            <span class="text-amber-400">"issued_at"</span><span class="text-slate-500">: </span><span class="text-green-400">"2026-03-21T00:00:00Z"</span><span class="text-slate-500">,</span>
+          </div>
+          <div class="pl-4">
+            <span class="text-amber-400">"expires_at"</span><span class="text-slate-500">: </span><span class="text-green-400">"2026-09-21T00:00:00Z"</span><span class="text-slate-500">,</span>
+          </div>
+          <div class="pl-4">
+            <span class="text-amber-400">"signature"</span><span class="text-slate-500">: </span><span class="text-green-400">"&lt;base64url-ed25519-signature&gt;"</span>
+          </div>
+          <div class="text-slate-500">}</div>
+        </div>
+      </div>
+
+      <!-- Proof of Possession -->
+      <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-4 md:p-8 shadow-sm mb-6 md:mb-8">
+        <h3 class="text-lg md:text-xl font-semibold mb-4 md:mb-6">Proof of Possession</h3>
+        <p class="text-slate-600 text-sm mb-4">A timestamped challenge signed with the agent's private key. Proves the agent currently holds the key (not just a replay of a previous request). 5-minute validity window.</p>
+        <div class="code-block rounded-lg md:rounded-xl p-3 md:p-6 font-mono text-xs md:text-sm overflow-x-auto">
+          <div class="text-slate-500 mb-2">// Sign input (plaintext)</div>
+          <div class="mb-3">
+            <span class="text-green-400">"aid-token-exchange\n{unix_timestamp}\n{auth_server_url}"</span>
+          </div>
+          <div class="text-slate-500 mb-2">// Proof (base64url encoded)</div>
+          <div>
+            <span class="text-purple-400">base64url</span><span class="text-slate-500">(</span><span class="text-amber-400">ed25519_sign</span><span class="text-slate-500">(sign_input) + timestamp_string)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Relationship to AMP -->
+      <div class="bg-teal-50 border border-teal-200 rounded-xl md:rounded-2xl p-5 md:p-8">
+        <h3 class="text-lg md:text-xl font-semibold mb-4 text-teal-900">AID + AMP</h3>
+        <div class="grid md:grid-cols-2 gap-6">
+          <div>
+            <div class="font-semibold text-teal-900 mb-2">AMP &mdash; Identity & Messaging</div>
+            <p class="text-sm text-teal-700 mb-2">The <a href="https://agentmessaging.org" class="underline hover:text-teal-900">Agent Messaging Protocol</a> provides the foundation:</p>
+            <ul class="text-sm text-teal-700 space-y-1">
+              <li>&bull; Ed25519 keypair generation</li>
+              <li>&bull; Agent addresses (name@tenant.provider)</li>
+              <li>&bull; Fingerprints for identity verification</li>
+              <li>&bull; Cryptographic message signing</li>
+            </ul>
+          </div>
+          <div>
+            <div class="font-semibold text-teal-900 mb-2">AID &mdash; Authentication & Authorization</div>
+            <p class="text-sm text-teal-700 mb-2">Agent Identity builds on AMP to add:</p>
+            <ul class="text-sm text-teal-700 space-y-1">
+              <li>&bull; OAuth 2.0 token exchange (urn:aid:agent-identity)</li>
+              <li>&bull; Scoped RS256 JWT tokens</li>
+              <li>&bull; Role-based access control</li>
+              <li>&bull; Multi-server registration</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Start -->
+  <section class="py-12 md:py-24 bg-slate-50 border-t border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 md:px-6">
+      <h2 class="text-2xl md:text-4xl font-bold text-center mb-3 md:mb-4">Quick Start</h2>
+      <p class="text-slate-600 text-center text-sm md:text-base max-w-2xl mx-auto mb-8 md:mb-12">Install in 30 seconds. Authenticate in 3 commands.</p>
+
+      <div class="max-w-3xl mx-auto">
+        <div class="code-block rounded-xl p-4 md:p-8 font-mono text-xs md:text-sm overflow-x-auto shadow-xl">
+          <div class="text-slate-500 mb-3"># Install AID</div>
+          <div class="mb-4">
+            <span class="text-green-400">$</span>
+            <span class="text-slate-300"> curl -fsSL https://raw.githubusercontent.com/agentmessaging/agent-identity/main/install.sh | bash</span>
+          </div>
+
+          <div class="text-slate-500 mb-3"># Initialize AMP identity (if not already done)</div>
+          <div class="mb-4">
+            <span class="text-green-400">$</span>
+            <span class="text-slate-300"> amp-init --auto</span>
+          </div>
+
+          <div class="text-slate-500 mb-3"># Register with an auth server (one-time)</div>
+          <div class="mb-4">
+            <span class="text-green-400">$</span>
+            <span class="text-slate-300"> aid-register --auth https://auth.example.com/acme --token eyJ... --role-id 2</span>
+          </div>
+
+          <div class="text-slate-500 mb-3"># Get a scoped JWT token</div>
+          <div class="mb-4">
+            <span class="text-green-400">$</span>
+            <span class="text-slate-300"> aid-token --auth https://auth.example.com/acme --scope "files:read"</span>
+          </div>
+
+          <div class="text-slate-500 mb-3"># Use it with any API</div>
+          <div>
+            <span class="text-green-400">$</span>
+            <span class="text-slate-300"> curl -H "Authorization: Bearer $(aid-token -a https://auth.example.com/acme -q)" \</span>
+          </div>
+          <div class="pl-4">
+            <span class="text-slate-300">https://api.example.com/files</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Landscape -->
+  <section class="py-12 md:py-24 border-t border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 md:px-6">
+      <h2 class="text-2xl md:text-4xl font-bold text-center mb-3 md:mb-4">The Landscape</h2>
+      <p class="text-slate-600 text-center text-sm md:text-base max-w-2xl mx-auto mb-8 md:mb-12">Non-human identity is an $11.3B market. Here's where AID fits.</p>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs md:text-sm">
+          <thead>
+            <tr class="border-b-2 border-slate-200">
+              <th class="text-left py-3 px-2 md:px-4 font-semibold"></th>
+              <th class="text-left py-3 px-2 md:px-4 font-semibold text-teal-700">AID</th>
+              <th class="text-left py-3 px-2 md:px-4 font-semibold">Entra Agent ID</th>
+              <th class="text-left py-3 px-2 md:px-4 font-semibold">AWS AgentCore</th>
+              <th class="text-left py-3 px-2 md:px-4 font-semibold">API Keys</th>
+            </tr>
+          </thead>
+          <tbody class="text-slate-600">
+            <tr class="border-b border-slate-100">
+              <td class="py-3 px-2 md:px-4 font-medium text-slate-900">Cloud Lock-in</td>
+              <td class="py-3 px-2 md:px-4 text-teal-700 font-medium">None</td>
+              <td class="py-3 px-2 md:px-4">Azure</td>
+              <td class="py-3 px-2 md:px-4">AWS</td>
+              <td class="py-3 px-2 md:px-4">None</td>
+            </tr>
+            <tr class="border-b border-slate-100">
+              <td class="py-3 px-2 md:px-4 font-medium text-slate-900">Crypto Identity</td>
+              <td class="py-3 px-2 md:px-4 text-teal-700 font-medium">Ed25519</td>
+              <td class="py-3 px-2 md:px-4">Certificates</td>
+              <td class="py-3 px-2 md:px-4">IAM Roles</td>
+              <td class="py-3 px-2 md:px-4">None</td>
+            </tr>
+            <tr class="border-b border-slate-100">
+              <td class="py-3 px-2 md:px-4 font-medium text-slate-900">Secret Rotation</td>
+              <td class="py-3 px-2 md:px-4 text-teal-700 font-medium">Not needed</td>
+              <td class="py-3 px-2 md:px-4">Auto</td>
+              <td class="py-3 px-2 md:px-4">Auto</td>
+              <td class="py-3 px-2 md:px-4">Manual</td>
+            </tr>
+            <tr class="border-b border-slate-100">
+              <td class="py-3 px-2 md:px-4 font-medium text-slate-900">Multi-Tenant</td>
+              <td class="py-3 px-2 md:px-4 text-teal-700 font-medium">Native</td>
+              <td class="py-3 px-2 md:px-4">Via Azure AD</td>
+              <td class="py-3 px-2 md:px-4">Via IAM</td>
+              <td class="py-3 px-2 md:px-4">Manual</td>
+            </tr>
+            <tr class="border-b border-slate-100">
+              <td class="py-3 px-2 md:px-4 font-medium text-slate-900">Open Source</td>
+              <td class="py-3 px-2 md:px-4 text-teal-700 font-medium">MIT</td>
+              <td class="py-3 px-2 md:px-4">No</td>
+              <td class="py-3 px-2 md:px-4">No</td>
+              <td class="py-3 px-2 md:px-4">N/A</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-2 md:px-4 font-medium text-slate-900">Price</td>
+              <td class="py-3 px-2 md:px-4 text-teal-700 font-medium">Free</td>
+              <td class="py-3 px-2 md:px-4">$$$/mo</td>
+              <td class="py-3 px-2 md:px-4">$$$/mo</td>
+              <td class="py-3 px-2 md:px-4">Free</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- For Implementers -->
+  <section class="py-12 md:py-24 bg-slate-50 border-t border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 md:px-6">
+      <h2 class="text-2xl md:text-4xl font-bold text-center mb-3 md:mb-4">For Auth Server Implementers</h2>
+      <p class="text-slate-600 text-center text-sm md:text-base max-w-2xl mx-auto mb-8 md:mb-12">Add AID support to your OAuth 2.0 server in four steps.</p>
+
+      <div class="grid gap-4 md:grid-cols-2 md:gap-6">
+        <div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+          <div class="text-teal-700 font-mono font-bold mb-2">1. Agent Registration</div>
+          <p class="text-sm text-slate-600">Add a <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">POST /agent_registrations</code> endpoint that accepts public keys, addresses, and fingerprints. Assign roles with scoped permissions.</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+          <div class="text-teal-700 font-mono font-bold mb-2">2. Token Endpoint</div>
+          <p class="text-sm text-slate-600">Handle <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">grant_type=urn:aid:agent-identity</code> in your <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">POST /oauth/token</code> endpoint. Verify the signed identity and proof.</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+          <div class="text-teal-700 font-mono font-bold mb-2">3. Ed25519 Verification</div>
+          <p class="text-sm text-slate-600">Verify the Agent Identity signature, check expiration, validate proof of possession timestamp, and match fingerprints against registrations.</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+          <div class="text-teal-700 font-mono font-bold mb-2">4. OIDC Discovery</div>
+          <p class="text-sm text-slate-600">Add <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">urn:aid:agent-identity</code> to <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">grant_types_supported</code> in your discovery document so clients can auto-detect support.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-8 md:py-12 border-t border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 md:px-6">
+      <div class="grid gap-6 md:grid-cols-3">
+        <div>
+          <div class="text-teal-700 font-mono font-bold text-lg mb-2">{AID}</div>
+          <p class="text-sm text-slate-500">Agent Identity &mdash; authentication and authorization for AI agents.</p>
+          <p class="text-sm text-slate-500 mt-2">Part of the <a href="https://agentmessaging.org" class="text-slate-700 hover:text-teal-700 underline">Agent Messaging</a> ecosystem.</p>
+        </div>
+        <div>
+          <div class="font-semibold mb-2">Resources</div>
+          <ul class="text-sm text-slate-500 space-y-1">
+            <li><a href="https://github.com/agentmessaging/agent-identity" class="hover:text-teal-700">GitHub Repository</a></li>
+            <li><a href="https://github.com/agentmessaging/agent-identity#commands" class="hover:text-teal-700">CLI Documentation</a></li>
+            <li><a href="https://agentmessaging.org" class="hover:text-teal-700">Agent Messaging Protocol</a></li>
+            <li><a href="https://github.com/agentmessaging/claude-plugin" class="hover:text-teal-700">AMP Claude Plugin</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="font-semibold mb-2">Community</div>
+          <ul class="text-sm text-slate-500 space-y-1">
+            <li><a href="https://github.com/agentmessaging/agent-identity/issues" class="hover:text-teal-700">Report Issues</a></li>
+            <li><a href="https://github.com/agentmessaging/agent-identity/pulls" class="hover:text-teal-700">Contribute</a></li>
+            <li><a href="https://x.com/agentmessaging" class="hover:text-teal-700">@agentmessaging on X</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="mt-8 pt-6 border-t border-slate-200 text-center text-xs text-slate-400">
+        MIT License &bull; Built by <a href="https://agentmessaging.org" class="hover:text-teal-700">Agent Messaging</a>
+      </div>
+    </div>
+  </footer>
+  </main>
+</body>
+</html>

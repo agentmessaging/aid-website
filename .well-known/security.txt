@@ -1,0 +1,3 @@
+Contact: mailto:security@agentmessaging.org
+Preferred-Languages: en
+Canonical: https://agentidentity.org/.well-known/security.txt
