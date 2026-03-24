@@ -1,0 +1,90 @@
+# Agent Identity (AID) Protocol
+# https://agentids.org
+
+> AID is an open protocol for AI agent authentication and authorization.
+> Agents prove identity with Ed25519 signatures and receive scoped JWT tokens via OAuth 2.0.
+
+## What AID Does
+
+AID lets AI agents authenticate with OAuth 2.0 servers using Ed25519 cryptographic identity — no passwords, no API keys, no secrets to rotate.
+
+## Three Parties
+
+1. **Human Admin** — Creates roles with specific permissions on the identity provider. Registers agents and controls what they can access. Always in control.
+2. **AI Agent** — Has an Ed25519 identity. Proves who it is to get a scoped JWT token. Cannot self-register or escalate permissions.
+3. **Target API** — Any API that validates JWTs via the auth server's JWKS endpoint. No AID-specific logic needed.
+
+## How It Works
+
+1. Admin creates a role with scoped permissions on the auth server (e.g., tickets:read, users:write)
+2. Agent initializes its Ed25519 identity: `aid-init --auto`
+3. Admin registers the agent with a role: `aid-register --auth <url> --token <ADMIN_JWT> --role-id 3`
+4. Agent requests a scoped JWT token: `aid-token --auth <url>`
+5. Agent calls any API with the JWT: `curl -H "Authorization: Bearer $TOKEN" https://api.example.com/resource`
+6. Target API validates the JWT using the auth server's JWKS endpoint
+
+## Security Model
+
+- The `--role-id` in `aid-register` binds the agent to a specific role
+- The `--token <ADMIN_JWT>` is what authorizes that binding
+- Without a valid admin token, registration is rejected
+- Once registered, every token the agent requests is scoped to that role's permissions
+- The agent cannot change its role, self-register, or escalate permissions
+- One-time human approval, then autonomous operation within boundaries
+
+## OAuth 2.0 Grant Type
+
+AID uses a custom OAuth 2.0 grant type: `urn:aid:agent-identity`
+
+Token request:
+```
+POST /oauth/token
+grant_type=urn:aid:agent-identity
+&agent_identity=<base64url-signed-identity>
+&proof=<base64url-proof-of-possession>
+&scope=files:read files:write
+```
+
+## Agent Identity Document
+
+```json
+{
+  "aid_version": "1.0",
+  "address": "agent-name@org.local",
+  "alias": "agent-name",
+  "public_key": "-----BEGIN PUBLIC KEY-----\n...",
+  "key_algorithm": "Ed25519",
+  "fingerprint": "SHA256:abc123...",
+  "issued_at": "2026-03-21T00:00:00Z",
+  "expires_at": "2026-09-21T00:00:00Z",
+  "signature": "<base64url-ed25519-signature>"
+}
+```
+
+## Proof of Possession
+
+```
+sign_input = "aid-token-exchange\n{unix_timestamp}\n{auth_server_url}"
+proof = base64url(ed25519_sign(sign_input) + timestamp_string)
+```
+
+5-minute validity window to prevent replay attacks.
+
+## For Auth Server Implementers
+
+1. Agent Registration endpoint — POST /agent_registrations
+2. Token endpoint — POST /oauth/token supporting grant_type=urn:aid:agent-identity
+3. Ed25519 verification — validate Agent Identity signatures and proof of possession
+4. JWKS endpoint — GET /.well-known/jwks.json for target API JWT validation
+5. OIDC discovery — advertise urn:aid:agent-identity in grant_types_supported
+
+## For Target API Implementers
+
+No AID-specific code needed. Just validate RS256 JWTs using the auth server's JWKS endpoint — standard JWT validation.
+
+## Links
+
+- Protocol specification: https://agentids.org
+- GitHub: https://github.com/agentmessaging/agent-identity
+- Install: `curl -fsSL https://raw.githubusercontent.com/agentmessaging/agent-identity/main/install.sh | bash`
+- Related: Agent Messaging Protocol (AMP) — https://agentmessaging.org

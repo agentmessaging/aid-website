@@ -5,3 +5,7 @@ User-agent: *
 Allow: /
 
 Sitemap: https://agentids.org/sitemap.xml
+
+# LLM-readable content
+# https://llmstxt.org
+LLMs-txt: https://agentids.org/llms.txt
