@@ -1,3 +1,9 @@
+# Agent Identity (AID) Security Contact
+# https://agentids.org
+
 Contact: mailto:security@agentmessaging.org
+Contact: https://github.com/agentmessaging/agent-identity/security/advisories
+Expires: 2027-12-31T23:59:59.000Z
+Policy: https://github.com/agentmessaging/agent-identity/blob/main/SECURITY.md
 Preferred-Languages: en
-Canonical: https://agentidentity.org/.well-known/security.txt
+Canonical: https://agentids.org/.well-known/security.txt

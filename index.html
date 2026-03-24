@@ -24,12 +24,18 @@
   <meta property="og:url" content="https://agentids.org">
   <meta property="og:site_name" content="Agent Identity">
   <meta property="og:locale" content="en_US">
+  <meta property="og:image" content="https://agentids.org/assets/images/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Agent Identity (AID) - Authentication & Authorization for AI Agents">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@agentmessaging">
+  <meta name="twitter:creator" content="@agentmessaging">
   <meta name="twitter:title" content="Agent Identity (AID) - Authentication & Authorization for AI Agents">
   <meta name="twitter:description" content="Open protocol for AI agent authentication. Ed25519 identity, OAuth 2.0 token exchange, scoped JWTs. No passwords, no API keys.">
+  <meta name="twitter:image" content="https://agentids.org/assets/images/twitter-card.png">
 
   <!-- JSON-LD Structured Data -->
   <script type="application/ld+json">
@@ -106,13 +112,53 @@
           "@type": "Answer",
           "text": "AID issues standard RS256 JWT tokens that work with any JWT-validating API. Tokens include scoped permissions based on the agent's assigned role, and are compatible with OIDC discovery and JWKS endpoints for seamless integration with API gateways like AWS API Gateway."
         }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I add AID support to my auth server?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Add a custom OAuth 2.0 grant type (urn:aid:agent-identity) to your token endpoint. When an agent presents its identity document and proof of possession, verify the Ed25519 signature, check the agent is registered, validate the proof timestamp, and issue a scoped JWT. Advertise the grant type via OIDC discovery."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is AID compatible with existing OAuth 2.0 infrastructure?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. AID uses a standard OAuth 2.0 token endpoint with a custom grant type. The tokens it issues are standard RS256 JWTs. Any API that validates JWTs via JWKS can verify AID tokens without knowing about the AID protocol. It works with AWS API Gateway, Cloudflare, nginx, and any OIDC-compliant system."
+        }
       }
+    ]
+  }
+  </script>
+
+  <!-- JSON-LD Organization -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Agent Messaging",
+    "url": "https://agentmessaging.org",
+    "logo": "https://agentids.org/assets/images/og-image.png",
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "email": "security@agentmessaging.org",
+      "contactType": "technical support"
+    },
+    "sameAs": [
+      "https://github.com/agentmessaging",
+      "https://x.com/agentmessaging"
     ]
   }
   </script>
 
   <!-- Favicon -->
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">

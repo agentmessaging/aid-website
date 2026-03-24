@@ -1,3 +1,7 @@
+# Agent Identity (AID) Protocol
+# https://agentids.org
+
 User-agent: *
 Allow: /
+
 Sitemap: https://agentids.org/sitemap.xml
