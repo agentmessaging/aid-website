@@ -365,46 +365,102 @@
   <section id="how-it-works" class="py-12 md:py-24 border-t border-slate-200">
     <div class="max-w-6xl mx-auto px-4 md:px-6">
       <h2 class="text-2xl md:text-4xl font-bold text-center mb-3 md:mb-4">How it Works</h2>
-      <p class="text-slate-600 text-center text-sm md:text-base max-w-2xl mx-auto mb-8 md:mb-16">Three steps. No passwords. Standard OAuth 2.0.</p>
+      <p class="text-slate-600 text-center text-sm md:text-base max-w-2xl mx-auto mb-8 md:mb-16">Three parties. Human-controlled access. Standard OAuth 2.0.</p>
 
+      <!-- Three parties explanation -->
       <div class="grid gap-4 md:grid-cols-3 md:gap-8 mb-8 md:mb-12">
+        <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-5 md:p-8 shadow-sm text-center">
+          <div class="text-3xl mb-3">👤</div>
+          <h3 class="text-lg md:text-xl font-semibold mb-2">Human Admin</h3>
+          <p class="text-slate-600 text-sm">Creates roles with specific permissions on the identity provider. Registers agents and controls what they can access. <strong>Always in control.</strong></p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-5 md:p-8 shadow-sm text-center">
+          <div class="text-3xl mb-3">🤖</div>
+          <h3 class="text-lg md:text-xl font-semibold mb-2">AI Agent</h3>
+          <p class="text-slate-600 text-sm">Has an Ed25519 identity. Proves who it is to get a scoped JWT token. <strong>Cannot self-register or escalate permissions.</strong></p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-5 md:p-8 shadow-sm text-center">
+          <div class="text-3xl mb-3">🔌</div>
+          <h3 class="text-lg md:text-xl font-semibold mb-2">Target API</h3>
+          <p class="text-slate-600 text-sm">Any API that validates JWTs via the auth server's JWKS endpoint. <strong>No AID-specific logic needed.</strong> Works with AWS Gateway, Cloudflare, nginx.</p>
+        </div>
+      </div>
+
+      <!-- Steps -->
+      <div class="grid gap-4 md:grid-cols-4 md:gap-6 mb-8 md:mb-12">
+        <!-- Step 0 -->
+        <div class="bg-amber-50 border border-amber-200 rounded-xl md:rounded-2xl p-5 md:p-6 shadow-sm">
+          <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center mb-4 text-amber-700 font-bold font-mono text-sm">00</div>
+          <h3 class="text-base md:text-lg font-semibold mb-2">Admin: Create Role</h3>
+          <p class="text-slate-600 text-sm">Human admin creates a role on the identity provider with scoped permissions (e.g., <code class="bg-amber-100 text-xs px-1 rounded">tickets:read</code>, <code class="bg-amber-100 text-xs px-1 rounded">users:write</code>).</p>
+        </div>
+
         <!-- Step 1 -->
-        <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-5 md:p-8 shadow-sm">
-          <div class="w-10 h-10 bg-teal-50 rounded-lg flex items-center justify-center mb-4 text-teal-700 font-bold font-mono">01</div>
-          <h3 class="text-lg md:text-xl font-semibold mb-2">Register</h3>
-          <p class="text-slate-600 text-sm mb-4">One-time setup. Admin registers the agent's public key with the auth server and assigns a role with scoped permissions.</p>
-          <div class="code-block rounded-lg p-3 font-mono text-xs overflow-x-auto">
-            <span class="text-green-400">$</span>
-            <span class="text-slate-300"> aid-register \</span><br>
-            <span class="text-slate-300">    --auth https://auth.example.com/acme \</span><br>
-            <span class="text-slate-300">    --token eyJ... --role-id 2</span>
-          </div>
+        <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-5 md:p-6 shadow-sm">
+          <div class="w-10 h-10 bg-teal-50 rounded-lg flex items-center justify-center mb-4 text-teal-700 font-bold font-mono text-sm">01</div>
+          <h3 class="text-base md:text-lg font-semibold mb-2">Register Agent</h3>
+          <p class="text-slate-600 text-sm">Admin registers the agent's public key with the auth server and assigns the role. One-time setup.</p>
         </div>
 
         <!-- Step 2 -->
-        <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-5 md:p-8 shadow-sm">
-          <div class="w-10 h-10 bg-teal-50 rounded-lg flex items-center justify-center mb-4 text-teal-700 font-bold font-mono">02</div>
-          <h3 class="text-lg md:text-xl font-semibold mb-2">Authenticate</h3>
-          <p class="text-slate-600 text-sm mb-4">Agent signs its identity document and proof of possession, sends them to the OAuth token endpoint.</p>
-          <div class="code-block rounded-lg p-3 font-mono text-xs overflow-x-auto">
-            <span class="text-green-400">$</span>
-            <span class="text-slate-300"> aid-token \</span><br>
-            <span class="text-slate-300">    --auth https://auth.example.com/acme</span><br>
-            <span class="text-teal-400 mt-1 block">Token obtained (3600s)</span>
-          </div>
+        <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-5 md:p-6 shadow-sm">
+          <div class="w-10 h-10 bg-teal-50 rounded-lg flex items-center justify-center mb-4 text-teal-700 font-bold font-mono text-sm">02</div>
+          <h3 class="text-base md:text-lg font-semibold mb-2">Agent: Get Token</h3>
+          <p class="text-slate-600 text-sm">Agent signs its identity + proof of possession and exchanges them for a scoped RS256 JWT.</p>
         </div>
 
         <!-- Step 3 -->
-        <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-5 md:p-8 shadow-sm">
-          <div class="w-10 h-10 bg-teal-50 rounded-lg flex items-center justify-center mb-4 text-teal-700 font-bold font-mono">03</div>
-          <h3 class="text-lg md:text-xl font-semibold mb-2">Access APIs</h3>
-          <p class="text-slate-600 text-sm mb-4">Use the JWT with any API that validates tokens. Standard Bearer auth. Works with AWS Gateway, Cloudflare, nginx, anything.</p>
-          <div class="code-block rounded-lg p-3 font-mono text-xs overflow-x-auto">
+        <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-5 md:p-6 shadow-sm">
+          <div class="w-10 h-10 bg-teal-50 rounded-lg flex items-center justify-center mb-4 text-teal-700 font-bold font-mono text-sm">03</div>
+          <h3 class="text-base md:text-lg font-semibold mb-2">Call Any API</h3>
+          <p class="text-slate-600 text-sm">Agent uses the JWT with any API. The API validates the token via the auth server's JWKS endpoint.</p>
+        </div>
+      </div>
+
+      <!-- Sample flow -->
+      <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-4 md:p-8 shadow-sm mb-8 md:mb-12">
+        <h3 class="text-lg md:text-xl font-semibold mb-2 md:mb-3">Example: Support Agent for Zoom Tenant</h3>
+        <p class="text-slate-500 text-sm mb-4 md:mb-6">A support agent needs API access to manage tickets. The admin controls what it can do.</p>
+        <div class="code-block rounded-lg md:rounded-xl p-3 md:p-6 font-mono text-xs md:text-sm overflow-x-auto">
+          <div class="text-amber-400 mb-3"># ── ADMIN (human, one-time setup) ──────────────────────</div>
+          <div class="text-slate-500 mb-1"># Step 0: Create "support" role on auth server with permissions:</div>
+          <div class="text-slate-500 mb-3">#   tickets:read, tickets:write, users:read</div>
+
+          <div class="text-teal-400 mb-3"># ── AGENT (ai) ─────────────────────────────────────────</div>
+          <div class="text-slate-500 mb-1"># Step 1: Initialize identity (one-time)</div>
+          <div class="mb-3">
             <span class="text-green-400">$</span>
-            <span class="text-slate-300"> curl -H "Authorization: \</span><br>
-            <span class="text-slate-300">    Bearer $TOKEN" \</span><br>
-            <span class="text-slate-300">    https://api.example.com/files</span>
+            <span class="text-slate-300"> aid-init --name support-agent</span>
           </div>
+
+          <div class="text-slate-500 mb-1"># Step 2: Admin registers agent with auth server (one-time)</div>
+          <div class="mb-3">
+            <span class="text-green-400">$</span>
+            <span class="text-slate-300"> aid-register --auth https://auth.23blocks.com/zoom \</span>
+          </div>
+          <div class="mb-3 pl-4">
+            <span class="text-slate-300">--token &lt;ADMIN_JWT&gt; --role-id 3</span>
+          </div>
+
+          <div class="text-slate-500 mb-1"># Step 3: Agent gets a scoped token (autonomous, repeatable)</div>
+          <div class="mb-3">
+            <span class="text-green-400">$</span>
+            <span class="text-slate-300"> TOKEN=$(aid-token --auth https://auth.23blocks.com/zoom --quiet)</span>
+          </div>
+
+          <div class="text-slate-500 mb-1"># Step 4: Agent calls any API with the JWT</div>
+          <div class="mb-1">
+            <span class="text-green-400">$</span>
+            <span class="text-slate-300"> curl -H "Authorization: Bearer $TOKEN" \</span>
+          </div>
+          <div class="pl-4 mb-3">
+            <span class="text-slate-300">https://api.23blocks.com/zoom/tickets</span>
+          </div>
+
+          <div class="text-teal-400 mb-1"># ── TARGET API ─────────────────────────────────────────</div>
+          <div class="text-slate-500"># API validates the JWT using the auth server's JWKS endpoint</div>
+          <div class="text-slate-500"># GET https://auth.23blocks.com/zoom/.well-known/jwks.json</div>
+          <div class="text-slate-500"># No AID-specific code needed — standard JWT validation</div>
         </div>
       </div>
 
@@ -636,10 +692,10 @@
             <span class="text-slate-300"> curl -fsSL https://raw.githubusercontent.com/agentmessaging/agent-identity/main/install.sh | bash</span>
           </div>
 
-          <div class="text-slate-500 mb-3"># Initialize AMP identity (if not already done)</div>
+          <div class="text-slate-500 mb-3"># Initialize agent identity</div>
           <div class="mb-4">
             <span class="text-green-400">$</span>
-            <span class="text-slate-300"> amp-init --auto</span>
+            <span class="text-slate-300"> aid-init --auto</span>
           </div>
 
           <div class="text-slate-500 mb-3"># Register with an auth server (one-time)</div>
@@ -736,10 +792,11 @@
   <!-- For Implementers -->
   <section class="py-12 md:py-24 bg-slate-50 border-t border-slate-200">
     <div class="max-w-6xl mx-auto px-4 md:px-6">
-      <h2 class="text-2xl md:text-4xl font-bold text-center mb-3 md:mb-4">For Auth Server Implementers</h2>
-      <p class="text-slate-600 text-center text-sm md:text-base max-w-2xl mx-auto mb-8 md:mb-12">Add AID support to your OAuth 2.0 server in four steps.</p>
+      <h2 class="text-2xl md:text-4xl font-bold text-center mb-3 md:mb-4">For Implementers</h2>
+      <p class="text-slate-600 text-center text-sm md:text-base max-w-2xl mx-auto mb-8 md:mb-12">What each party needs to implement.</p>
 
-      <div class="grid gap-4 md:grid-cols-2 md:gap-6">
+      <h3 class="text-lg font-semibold mb-4 text-teal-800">Identity Provider (Auth Server)</h3>
+      <div class="grid gap-4 md:grid-cols-2 md:gap-6 mb-8">
         <div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
           <div class="text-teal-700 font-mono font-bold mb-2">1. Agent Registration</div>
           <p class="text-sm text-slate-600">Add a <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">POST /agent_registrations</code> endpoint that accepts public keys, addresses, and fingerprints. Assign roles with scoped permissions.</p>
@@ -753,9 +810,14 @@
           <p class="text-sm text-slate-600">Verify the Agent Identity signature, check expiration, validate proof of possession timestamp, and match fingerprints against registrations.</p>
         </div>
         <div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
-          <div class="text-teal-700 font-mono font-bold mb-2">4. OIDC Discovery</div>
-          <p class="text-sm text-slate-600">Add <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">urn:aid:agent-identity</code> to <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">grant_types_supported</code> in your discovery document so clients can auto-detect support.</p>
+          <div class="text-teal-700 font-mono font-bold mb-2">4. JWKS + OIDC Discovery</div>
+          <p class="text-sm text-slate-600">Expose <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">/.well-known/jwks.json</code> so target APIs can validate JWTs. Add <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">urn:aid:agent-identity</code> to <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">grant_types_supported</code>.</p>
         </div>
+      </div>
+
+      <h3 class="text-lg font-semibold mb-4 text-teal-800">Target API (the service your agents call)</h3>
+      <div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+        <p class="text-sm text-slate-600"><strong>No AID-specific code needed.</strong> Just validate RS256 JWTs using the auth server's JWKS endpoint — the same way you'd validate any OAuth 2.0 token. Works with AWS API Gateway, Cloudflare Access, nginx, or any JWT middleware.</p>
       </div>
     </div>
   </section>
