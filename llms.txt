@@ -70,6 +70,26 @@ proof = base64url(ed25519_sign(sign_input) + timestamp_string)
 
 5-minute validity window to prevent replay attacks.
 
+## Token Introspection (RFC 7662)
+
+Target APIs can verify agent tokens in real-time:
+
+```
+POST /:tenant/oauth/introspect
+token=eyJhbGciOiJSUz...
+```
+
+Returns `active: true` with agent details, or `active: false` with reason (`agent_suspended`, `agent_not_found`, `token_expired`).
+
+## Agent Lifecycle
+
+States: pending → active ↔ suspended → deleted
+
+- `active` — can get tokens, introspection returns active: true
+- `suspended` — blocked from tokens (403), introspection returns active: false
+- `deleted` — soft-deleted, introspection returns active: false
+- Admins control lifecycle via POST /agent_registrations/:id/suspend and /reactivate
+
 ## For Auth Server Implementers
 
 1. Agent Registration endpoint — POST /agent_registrations
@@ -77,10 +97,13 @@ proof = base64url(ed25519_sign(sign_input) + timestamp_string)
 3. Ed25519 verification — validate Agent Identity signatures and proof of possession
 4. JWKS endpoint — GET /.well-known/jwks.json for target API JWT validation
 5. OIDC discovery — advertise urn:aid:agent-identity in grant_types_supported
+6. Introspection endpoint — POST /oauth/introspect (RFC 7662) for real-time token validation
+7. Lifecycle management — suspend/reactivate endpoints for admin control
 
 ## For Target API Implementers
 
-No AID-specific code needed. Just validate RS256 JWTs using the auth server's JWKS endpoint — standard JWT validation.
+Minimal: No AID-specific code needed. Validate RS256 JWTs using the auth server's JWKS endpoint.
+Full: Also call the introspection endpoint for real-time suspension checking.
 
 ## Links
 

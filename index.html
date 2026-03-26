@@ -461,7 +461,10 @@
           <div class="text-teal-400 mb-1"># ── TARGET API ─────────────────────────────────────────</div>
           <div class="text-slate-500"># API validates the JWT using the auth server's JWKS endpoint</div>
           <div class="text-slate-500"># GET https://auth.23blocks.com/zoom/.well-known/jwks.json</div>
-          <div class="text-slate-500"># No AID-specific code needed — standard JWT validation</div>
+          <div class="text-slate-500 mb-3"># No AID-specific code needed — standard JWT validation</div>
+          <div class="text-slate-500"># Optional: real-time status check via introspection</div>
+          <div class="text-slate-500"># POST https://auth.23blocks.com/zoom/oauth/introspect</div>
+          <div class="text-slate-500"># → {"active": true, "agent_status": "active", ...}</div>
         </div>
         <div class="mt-4 md:mt-6 bg-teal-50 border border-teal-200 rounded-lg p-4 md:p-5">
           <p class="text-sm text-teal-900"><strong>How the agent gets its permissions:</strong> The <code class="bg-teal-100 px-1.5 py-0.5 rounded text-xs">--role-id</code> in <code class="bg-teal-100 px-1.5 py-0.5 rounded text-xs">aid-register</code> binds the agent to a specific role, and the <code class="bg-teal-100 px-1.5 py-0.5 rounded text-xs">--token &lt;ADMIN_JWT&gt;</code> is what authorizes it. The admin's JWT proves they have permission to register agents with that role. Without a valid admin token, the registration is rejected. Once registered, every token the agent requests is scoped to that role's permissions — the agent cannot change its role, self-register, or escalate. <strong>One-time human approval, then the agent operates autonomously within those boundaries.</strong></p>
@@ -817,11 +820,20 @@
           <div class="text-teal-700 font-mono font-bold mb-2">4. JWKS + OIDC Discovery</div>
           <p class="text-sm text-slate-600">Expose <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">/.well-known/jwks.json</code> so target APIs can validate JWTs. Add <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">urn:aid:agent-identity</code> to <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">grant_types_supported</code>.</p>
         </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+          <div class="text-teal-700 font-mono font-bold mb-2">5. Token Introspection</div>
+          <p class="text-sm text-slate-600">Add <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">POST /oauth/introspect</code> (RFC 7662) so target APIs can verify agent tokens in real-time. Returns <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">active: false</code> for suspended or deleted agents.</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+          <div class="text-teal-700 font-mono font-bold mb-2">6. Lifecycle Management</div>
+          <p class="text-sm text-slate-600">Add <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">suspend</code> and <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">reactivate</code> endpoints. States: <strong>pending &rarr; active &harr; suspended &rarr; deleted</strong>. Suspended agents are blocked from token issuance and flagged via introspection.</p>
+        </div>
       </div>
 
       <h3 class="text-lg font-semibold mb-4 text-teal-800">Target API (the service your agents call)</h3>
       <div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
-        <p class="text-sm text-slate-600"><strong>No AID-specific code needed.</strong> Just validate RS256 JWTs using the auth server's JWKS endpoint — the same way you'd validate any OAuth 2.0 token. Works with AWS API Gateway, Cloudflare Access, nginx, or any JWT middleware.</p>
+        <p class="text-sm text-slate-600"><strong>Minimal: No AID-specific code needed.</strong> Just validate RS256 JWTs using the auth server's JWKS endpoint — the same way you'd validate any OAuth 2.0 token. Works with AWS API Gateway, Cloudflare Access, nginx, or any JWT middleware.</p>
+        <p class="text-sm text-slate-600 mt-2"><strong>Full control:</strong> Call the introspection endpoint (<code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">POST /oauth/introspect</code>) to check real-time agent status — detect suspended agents before their token expires.</p>
       </div>
     </div>
   </section>
