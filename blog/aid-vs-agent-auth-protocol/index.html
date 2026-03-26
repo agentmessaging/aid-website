@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AID vs Agent Auth Protocol: Role-Based Simplicity vs Capability-Based Complexity - Agent Identity (AID)</title>
+  <meta name="description" content="A detailed comparison of AID and Agent Auth Protocol — two open protocols for AI agent authentication that take fundamentally different approaches to authorization, lifecycle, and developer experience.">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+  <link rel="canonical" href="https://agentids.org/blog/aid-vs-agent-auth-protocol/">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="AID vs Agent Auth Protocol: Role-Based Simplicity vs Capability-Based Complexity">
+  <meta property="og:description" content="Two open protocols for AI agent authentication. One ships today with four shell scripts. The other is a comprehensive specification still looking for its first implementation.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://agentids.org/blog/aid-vs-agent-auth-protocol/">
+  <meta property="og:site_name" content="Agent Identity (AID)">
+  <meta property="og:image" content="https://agentids.org/assets/images/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="article:published_time" content="2026-03-25T00:00:00Z">
+  <meta property="article:author" content="23blocks">
+  <meta property="article:section" content="Protocol Design">
+  <meta property="article:tag" content="AID">
+  <meta property="article:tag" content="Agent Auth Protocol">
+  <meta property="article:tag" content="Non-Human Identity">
+  <meta property="article:tag" content="OAuth 2.0">
+  <meta property="article:tag" content="Protocol Comparison">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@agentmessaging">
+  <meta name="twitter:creator" content="@agentmessaging">
+  <meta name="twitter:title" content="AID vs Agent Auth Protocol: Role-Based vs Capability-Based">
+  <meta name="twitter:description" content="Two approaches to AI agent authentication. Role-based simplicity vs capability-based granularity. Which fits your use case?">
+  <meta name="twitter:image" content="https://agentids.org/assets/images/og-image.png">
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "AID vs Agent Auth Protocol: Role-Based Simplicity vs Capability-Based Complexity",
+    "description": "A detailed comparison of AID and Agent Auth Protocol for AI agent authentication.",
+    "datePublished": "2026-03-25T00:00:00Z",
+    "dateModified": "2026-03-25T00:00:00Z",
+    "author": {
+      "@type": "Person",
+      "name": "Juan Pelaez",
+      "url": "https://x.com/jkpelaez"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Agent Identity (AID)",
+      "url": "https://agentids.org"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://agentids.org/blog/aid-vs-agent-auth-protocol/"
+    },
+    "image": "https://agentids.org/assets/images/og-image.png",
+    "keywords": ["AID", "Agent Auth Protocol", "non-human identity", "OAuth 2.0", "Ed25519", "AI agent authentication", "protocol comparison"],
+    "articleSection": "Protocol Design",
+    "wordCount": 2800
+  }
+  </script>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/apple-touch-icon.png">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Space Grotesk', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              200: '#99f6e4',
+              300: '#5eead4',
+              400: '#2dd4bf',
+              500: '#14b8a6',
+              600: '#0d9488',
+              700: '#0f766e',
+              800: '#115e59',
+              900: '#134e4a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .gradient-text {
+      background: linear-gradient(135deg, #0f766e 0%, #115e59 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .code-block {
+      background: #1e293b;
+    }
+    article h2 { scroll-margin-top: 5rem; }
+  </style>
+</head>
+<body class="bg-white text-slate-900 font-sans antialiased">
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:shadow-lg">Skip to content</a>
+
+  <!-- Navigation -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 md:px-6 py-3">
+      <div class="flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2 text-base md:text-xl font-mono font-bold text-teal-700">
+          {AID}
+        </a>
+        <div class="flex items-center gap-3 md:gap-6">
+          <a href="/#how-it-works" class="hidden md:block text-slate-900 hover:text-teal-700 transition-colors">How it Works</a>
+          <a href="/#features" class="hidden md:block text-slate-900 hover:text-teal-700 transition-colors">Features</a>
+          <a href="/#protocol" class="hidden md:block text-slate-900 hover:text-teal-700 transition-colors">Protocol</a>
+          <a href="/blog/" class="text-teal-700 font-medium transition-colors text-sm md:text-base">Blog</a>
+          <a href="https://github.com/agentmessaging/agent-identity" class="text-slate-900 hover:text-teal-700 transition-colors">
+            <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main-content">
+    <article class="pt-20 md:pt-24 pb-16 md:pb-24">
+      <div class="max-w-4xl mx-auto px-4 md:px-6">
+
+        <!-- Article Header -->
+        <header class="mb-8 md:mb-12">
+          <div class="mb-4">
+            <a href="/blog/" class="text-sm text-slate-500 hover:text-teal-700 transition-colors inline-flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+              Back to Blog
+            </a>
+          </div>
+          <div class="flex flex-wrap gap-2 mb-4">
+            <span class="bg-teal-50 text-teal-700 text-xs font-medium px-2.5 py-0.5 rounded-full">Comparison</span>
+            <span class="bg-teal-50 text-teal-700 text-xs font-medium px-2.5 py-0.5 rounded-full">Protocol Design</span>
+          </div>
+          <h1 class="text-3xl md:text-5xl font-bold leading-tight mb-4 md:mb-6">
+            AID vs Agent Auth Protocol: Role-Based Simplicity vs Capability-Based Complexity
+          </h1>
+          <p class="text-base md:text-xl text-slate-600 mb-4 md:mb-6 leading-relaxed">
+            Two open protocols are emerging to solve AI agent authentication. One ships today with four shell scripts and a working reference implementation. The other is a comprehensive 50-page specification still looking for its first deployment. Both use Ed25519 and OAuth 2.0 at the core &mdash; but they make very different design choices about who controls what.
+          </p>
+          <div class="flex items-center gap-3 text-sm text-slate-500 border-b border-slate-200 pb-6">
+            <div class="flex items-center gap-2">
+              <span class="font-medium text-slate-700">Juan Pel&aacute;ez</span>
+              <a href="https://x.com/jkpelaez" class="text-slate-400 hover:text-teal-700 transition-colors" title="@jkpelaez on X">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              </a>
+            </div>
+            <span class="text-slate-300">|</span>
+            <time datetime="2026-03-25">March 25, 2026</time>
+            <span class="text-slate-300">|</span>
+            <span>12 min read</span>
+          </div>
+        </header>
+
+        <!-- Table of Contents -->
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 md:p-6 mb-8 md:mb-12">
+          <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-3">Contents</h2>
+          <nav class="space-y-2 text-sm md:text-base">
+            <a href="#overview" class="block text-slate-700 hover:text-teal-700 transition-colors">Overview</a>
+            <a href="#identity" class="block text-slate-700 hover:text-teal-700 transition-colors">Identity Model</a>
+            <a href="#authorization" class="block text-slate-700 hover:text-teal-700 transition-colors">Authorization: Roles vs Capabilities</a>
+            <a href="#human-approval" class="block text-slate-700 hover:text-teal-700 transition-colors">Human Approval Flows</a>
+            <a href="#lifecycle" class="block text-slate-700 hover:text-teal-700 transition-colors">Agent Lifecycle</a>
+            <a href="#introspection" class="block text-slate-700 hover:text-teal-700 transition-colors">Token Introspection</a>
+            <a href="#agent-auth-better" class="block text-slate-700 hover:text-teal-700 transition-colors">What Agent Auth Protocol Does Better</a>
+            <a href="#aid-better" class="block text-slate-700 hover:text-teal-700 transition-colors">What AID Does Better</a>
+            <a href="#comparison-table" class="block text-slate-700 hover:text-teal-700 transition-colors">Side-by-Side Comparison</a>
+            <a href="#when-to-use" class="block text-slate-700 hover:text-teal-700 transition-colors">When to Use Which</a>
+          </nav>
+        </div>
+
+        <!-- Article Body -->
+        <div class="prose prose-slate max-w-none">
+
+          <!-- Overview -->
+          <h2 id="overview" class="text-2xl md:text-3xl font-bold mt-12 mb-4">Overview</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">The $11B non-human identity market is growing fast, and AI agents need real authentication &mdash; not borrowed user tokens or shared API keys. Two open protocols have emerged with different philosophies:</p>
+
+          <div class="grid md:grid-cols-2 gap-4 mb-8">
+            <div class="bg-teal-50 border border-teal-200 rounded-xl p-5">
+              <div class="font-mono font-bold text-teal-700 mb-2">AID (Agent Identity)</div>
+              <p class="text-sm text-teal-900">v0.3.0 by Agent Messaging / 23blocks. Role-based authorization, 4 CLI scripts, working reference implementation. Ships today.</p>
+            </div>
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-5">
+              <div class="font-mono font-bold text-slate-700 mb-2">Agent Auth Protocol</div>
+              <p class="text-sm text-slate-600">v1.0-draft by Better Auth. Capability-based authorization, host/agent dual identity, comprehensive specification. No implementation yet.</p>
+            </div>
+          </div>
+
+          <p class="text-slate-700 leading-relaxed mb-6">Both use Ed25519 cryptographic identity and OAuth 2.0 token exchange at the core. The philosophical split happens at the authorization layer: AID maps agents to roles (the way most APIs already work), while Agent Auth Protocol defines fine-grained capabilities with constraint operators (a new authorization paradigm that target APIs must adopt).</p>
+
+          <!-- Identity Model -->
+          <h2 id="identity" class="text-2xl md:text-3xl font-bold mt-12 mb-4">Identity Model</h2>
+          <p class="text-slate-700 leading-relaxed mb-4"><strong>AID</strong> uses a single identity model: each agent has an Ed25519 keypair, a human-readable address, and a fingerprint. The agent is the identity.</p>
+          <p class="text-slate-700 leading-relaxed mb-4"><strong>Agent Auth Protocol</strong> introduces a dual identity model: the <em>host</em> (the application running the agent, like a SaaS platform) and the <em>agent</em> (the AI itself). This lets a single host manage many agents with different permissions.</p>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-6">
+            <p class="text-sm text-slate-600"><strong>Our take:</strong> The dual identity model adds complexity for enterprise scenarios that most teams don't have yet. AID's single identity covers the common case &mdash; one agent, one identity, one set of permissions. If you're building a multi-tenant SaaS that spawns agents on behalf of users, the host/agent split makes sense. For everything else, it's premature abstraction.</p>
+          </div>
+
+          <!-- Authorization -->
+          <h2 id="authorization" class="text-2xl md:text-3xl font-bold mt-12 mb-4">Authorization: Roles vs Capabilities</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">This is the biggest design difference between the two protocols.</p>
+
+          <div class="grid md:grid-cols-2 gap-4 mb-6">
+            <div class="border border-slate-200 rounded-xl p-5">
+              <div class="font-semibold mb-2">AID: Role-Based (RBAC)</div>
+              <div class="code-block rounded-lg p-4 font-mono text-xs text-slate-300 mb-3">
+                <div><span class="text-amber-400">aid-register</span> --role-id 3</div>
+                <div class="text-slate-500 mt-2"># Agent gets role "support"</div>
+                <div class="text-slate-500"># Role has: tickets:read, tickets:write</div>
+                <div class="text-slate-500"># JWT scopes = role permissions</div>
+              </div>
+              <p class="text-sm text-slate-600">Admin creates roles on the auth server. Agent is bound to a role at registration. Token scopes come from the role's permissions. This is how most APIs already work.</p>
+            </div>
+            <div class="border border-slate-200 rounded-xl p-5">
+              <div class="font-semibold mb-2">Agent Auth: Capability-Based</div>
+              <div class="code-block rounded-lg p-4 font-mono text-xs text-slate-300 mb-3">
+                <div><span class="text-amber-400">capabilities</span>: [{</div>
+                <div class="pl-4">resource: "email",</div>
+                <div class="pl-4">actions: ["read"],</div>
+                <div class="pl-4">constraints: {</div>
+                <div class="pl-8">date: { op: "gte", value: "-7d" }</div>
+                <div class="pl-4">}</div>
+                <div>}]</div>
+              </div>
+              <p class="text-sm text-slate-600">Capabilities define exactly what the agent can do, with constraint operators (eq, in, range, pattern, not) for fine-grained control. More expressive, but requires target APIs to implement constraint evaluation.</p>
+            </div>
+          </div>
+
+          <p class="text-slate-700 leading-relaxed mb-6">The capability model is more granular &mdash; you can say "read emails from the last 7 days" instead of just "read emails." But this expressiveness comes at a cost: every target API must understand and evaluate capability constraints. With AID's role-based model, target APIs just check JWT scopes the way they already do.</p>
+
+          <!-- Human Approval Flows -->
+          <h2 id="human-approval" class="text-2xl md:text-3xl font-bold mt-12 mb-4">Human Approval Flows</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">Both protocols require human authorization before an agent can operate. The mechanism differs significantly.</p>
+
+          <div class="grid md:grid-cols-2 gap-4 mb-6">
+            <div class="border border-slate-200 rounded-xl p-5">
+              <div class="font-semibold mb-2">AID</div>
+              <p class="text-sm text-slate-600">Admin passes their JWT during registration: <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">aid-register --token &lt;ADMIN_JWT&gt; --role-id 3</code>. The admin's JWT proves they have permission to register agents with that role. Simple, stateless, one HTTP call.</p>
+            </div>
+            <div class="border border-slate-200 rounded-xl p-5">
+              <div class="font-semibold mb-2">Agent Auth Protocol</div>
+              <p class="text-sm text-slate-600">Supports two RFC-based flows: <strong>Device Authorization Grant</strong> (RFC 8628) where the agent displays a code and the admin authorizes on a separate device, and <strong>CIBA</strong> (Client-Initiated Backchannel Authentication) where the server pushes a notification to the admin. More formal, but more infrastructure required.</p>
+            </div>
+          </div>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-6">
+            <p class="text-sm text-slate-600"><strong>Our take:</strong> Device Authorization and CIBA are well-established RFCs, but they're designed for scenarios where the human and the agent are on different devices. In most AI agent deployments today, the admin has direct access to both the agent and the auth server. AID's approach &mdash; admin passes their JWT directly &mdash; handles this without extra infrastructure. If your agents run on disconnected devices where the admin can't provide a JWT, the Device Authorization flow is genuinely useful.</p>
+          </div>
+
+          <!-- Lifecycle -->
+          <h2 id="lifecycle" class="text-2xl md:text-3xl font-bold mt-12 mb-4">Agent Lifecycle</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">Agent Auth Protocol defines 6 lifecycle states: <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">pending</code>, <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">active</code>, <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">expired</code>, <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">revoked</code>, <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">rejected</code>, and <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">claimed</code>.</p>
+          <p class="text-slate-700 leading-relaxed mb-4">AID (as of v0.3.0) defines 4 states that cover the practical cases:</p>
+
+          <div class="code-block rounded-lg p-5 font-mono text-sm text-slate-300 mb-6">
+            <div><span class="text-teal-400">pending</span> <span class="text-slate-500">&rarr;</span> <span class="text-green-400">active</span> <span class="text-slate-500">&rarr;</span> <span class="text-amber-400">suspended</span> <span class="text-slate-500">&rarr;</span> <span class="text-green-400">active</span> <span class="text-slate-500">(reactivated)</span></div>
+            <div class="pl-24 md:pl-32"><span class="text-slate-500">&rarr;</span> <span class="text-red-400">deleted</span> <span class="text-slate-500">(terminal)</span></div>
+          </div>
+
+          <p class="text-slate-700 leading-relaxed mb-6">The key difference: AID uses <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">suspended</code> as a reversible state (admin can reactivate), while Agent Auth Protocol's <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">revoked</code> is terminal. Both approaches are valid &mdash; AID's model lets admins temporarily disable agents during incidents without losing the registration, which is what you want in practice.</p>
+
+          <!-- Introspection -->
+          <h2 id="introspection" class="text-2xl md:text-3xl font-bold mt-12 mb-4">Token Introspection</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">Both protocols support RFC 7662 token introspection, but with different emphasis.</p>
+          <p class="text-slate-700 leading-relaxed mb-4"><strong>Agent Auth Protocol</strong> specifies a dedicated introspection endpoint with detailed response fields including capabilities, constraints, and host information.</p>
+          <p class="text-slate-700 leading-relaxed mb-4"><strong>AID</strong> (v0.3.0) provides introspection that returns real-time agent status &mdash; the critical feature being that a suspended agent's tokens immediately return <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">active: false</code>, even if the JWT hasn't expired yet:</p>
+
+          <div class="code-block rounded-lg p-5 font-mono text-xs md:text-sm text-slate-300 mb-6">
+            <div class="text-slate-500">POST /acme/oauth/introspect</div>
+            <div class="text-slate-500 mb-3">token=eyJhbGciOiJSUz...</div>
+            <div class="text-slate-500">Response:</div>
+            <div>{</div>
+            <div class="pl-4"><span class="text-amber-400">"active"</span>: <span class="text-red-400">false</span>,</div>
+            <div class="pl-4"><span class="text-amber-400">"reason"</span>: <span class="text-green-400">"agent_suspended"</span></div>
+            <div>}</div>
+          </div>
+
+          <p class="text-slate-700 leading-relaxed mb-6">This closes the loop: admin suspends an agent, and the next introspection call from any target API immediately reflects that &mdash; no waiting for token expiration.</p>
+
+          <!-- What Agent Auth Does Better -->
+          <h2 id="agent-auth-better" class="text-2xl md:text-3xl font-bold mt-12 mb-4">What Agent Auth Protocol Does Better</h2>
+          <div class="space-y-4 mb-8">
+            <div class="border-l-4 border-slate-300 pl-4">
+              <p class="font-semibold text-slate-800">Capability-based authorization is more expressive</p>
+              <p class="text-sm text-slate-600 mt-1">Constraint operators (eq, in, range, pattern, not) allow fine-grained policies like "read emails from the last 7 days" or "access files matching *.pdf only." AID's role-based scopes can't express these constraints &mdash; you'd implement them in target API logic instead.</p>
+            </div>
+            <div class="border-l-4 border-slate-300 pl-4">
+              <p class="font-semibold text-slate-800">Host/Agent dual identity is better for platforms</p>
+              <p class="text-sm text-slate-600 mt-1">If you're building a SaaS that spawns agents on behalf of users, the host concept lets you manage many agents under one platform identity. AID treats each agent as independent.</p>
+            </div>
+            <div class="border-l-4 border-slate-300 pl-4">
+              <p class="font-semibold text-slate-800">Discovery endpoint is well-specified</p>
+              <p class="text-sm text-slate-600 mt-1"><code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">/.well-known/agent-configuration</code> lets clients auto-discover all agent-specific endpoints. AID uses standard OIDC discovery, which works but doesn't have agent-specific metadata.</p>
+            </div>
+            <div class="border-l-4 border-slate-300 pl-4">
+              <p class="font-semibold text-slate-800">Execution modes are defined</p>
+              <p class="text-sm text-slate-600 mt-1">Sync, async, and streaming (SSE) patterns for agent operations. AID doesn't address execution semantics &mdash; by design, since AID is identity-only.</p>
+            </div>
+            <div class="border-l-4 border-slate-300 pl-4">
+              <p class="font-semibold text-slate-800">More formal approval flows</p>
+              <p class="text-sm text-slate-600 mt-1">Device Authorization Grant (RFC 8628) and CIBA provide standardized human-in-the-loop approval. Good for scenarios where admin and agent are on different devices.</p>
+            </div>
+          </div>
+
+          <!-- What AID Does Better -->
+          <h2 id="aid-better" class="text-2xl md:text-3xl font-bold mt-12 mb-4">What AID Does Better</h2>
+          <div class="space-y-4 mb-8">
+            <div class="border-l-4 border-teal-500 pl-4">
+              <p class="font-semibold text-slate-800">It ships today</p>
+              <p class="text-sm text-slate-600 mt-1">4 CLI scripts, a working reference implementation (23blocks Authentication API), and a Claude Code skill. You can authenticate an agent in 3 commands. Agent Auth Protocol is a specification with no implementation.</p>
+            </div>
+            <div class="border-l-4 border-teal-500 pl-4">
+              <p class="font-semibold text-slate-800">Zero adoption cost for target APIs</p>
+              <p class="text-sm text-slate-600 mt-1">Target APIs validate standard RS256 JWTs via JWKS &mdash; the same way they already validate OAuth tokens. No new authorization paradigm to implement. Agent Auth Protocol's capability constraints require target APIs to build a constraint evaluation engine.</p>
+            </div>
+            <div class="border-l-4 border-teal-500 pl-4">
+              <p class="font-semibold text-slate-800">Maps to how real APIs work</p>
+              <p class="text-sm text-slate-600 mt-1">Role &rarr; Permissions &rarr; JWT scopes. That's the authorization model of every major API (AWS IAM, Google Cloud IAM, Stripe, GitHub). AID doesn't ask you to change how you think about authorization.</p>
+            </div>
+            <div class="border-l-4 border-teal-500 pl-4">
+              <p class="font-semibold text-slate-800">Real-world sample flows</p>
+              <p class="text-sm text-slate-600 mt-1">Concrete examples with actual CLI commands: "support agent for Zoom tenant," step-by-step from init to API call. Agent Auth Protocol has abstract specification examples.</p>
+            </div>
+            <div class="border-l-4 border-teal-500 pl-4">
+              <p class="font-semibold text-slate-800">Clean separation of concerns</p>
+              <p class="text-sm text-slate-600 mt-1">AID does one thing: identity and authentication. It doesn't specify execution modes, streaming, or capability constraints. This makes it composable &mdash; pair it with AMP for messaging, any execution framework for orchestration.</p>
+            </div>
+            <div class="border-l-4 border-teal-500 pl-4">
+              <p class="font-semibold text-slate-800">Reversible suspension</p>
+              <p class="text-sm text-slate-600 mt-1">Suspend an agent, investigate, reactivate. Agent Auth Protocol's "revoked" state is terminal &mdash; you have to re-register. In incident response, you want to pause first and decide later.</p>
+            </div>
+          </div>
+
+          <!-- Comparison Table -->
+          <h2 id="comparison-table" class="text-2xl md:text-3xl font-bold mt-12 mb-4">Side-by-Side Comparison</h2>
+          <div class="overflow-x-auto mb-8">
+            <table class="w-full text-sm border-collapse">
+              <thead>
+                <tr class="border-b-2 border-slate-200">
+                  <th class="text-left py-3 pr-4 font-semibold text-slate-700">Feature</th>
+                  <th class="text-left py-3 px-4 font-semibold text-teal-700">AID v0.3.0</th>
+                  <th class="text-left py-3 pl-4 font-semibold text-slate-700">Agent Auth v1.0-draft</th>
+                </tr>
+              </thead>
+              <tbody class="text-slate-600">
+                <tr class="border-b border-slate-100">
+                  <td class="py-3 pr-4 font-medium">Status</td>
+                  <td class="py-3 px-4">Shipping, reference implementation</td>
+                  <td class="py-3 pl-4">Draft specification</td>
+                </tr>
+                <tr class="border-b border-slate-100">
+                  <td class="py-3 pr-4 font-medium">Identity</td>
+                  <td class="py-3 px-4">Single (agent)</td>
+                  <td class="py-3 pl-4">Dual (host + agent)</td>
+                </tr>
+                <tr class="border-b border-slate-100">
+                  <td class="py-3 pr-4 font-medium">Cryptography</td>
+                  <td class="py-3 px-4">Ed25519</td>
+                  <td class="py-3 pl-4">Ed25519</td>
+                </tr>
+                <tr class="border-b border-slate-100">
+                  <td class="py-3 pr-4 font-medium">Authorization</td>
+                  <td class="py-3 px-4">Role-based (RBAC)</td>
+                  <td class="py-3 pl-4">Capability-based with constraints</td>
+                </tr>
+                <tr class="border-b border-slate-100">
+                  <td class="py-3 pr-4 font-medium">Human approval</td>
+                  <td class="py-3 px-4">Admin JWT</td>
+                  <td class="py-3 pl-4">Device Auth (RFC 8628) + CIBA</td>
+                </tr>
+                <tr class="border-b border-slate-100">
+                  <td class="py-3 pr-4 font-medium">Token format</td>
+                  <td class="py-3 px-4">RS256 JWT</td>
+                  <td class="py-3 pl-4">RS256/ES256 JWT</td>
+                </tr>
+                <tr class="border-b border-slate-100">
+                  <td class="py-3 pr-4 font-medium">Introspection</td>
+                  <td class="py-3 px-4">RFC 7662 with agent status</td>
+                  <td class="py-3 pl-4">RFC 7662 with capabilities</td>
+                </tr>
+                <tr class="border-b border-slate-100">
+                  <td class="py-3 pr-4 font-medium">Lifecycle states</td>
+                  <td class="py-3 px-4">4 (pending, active, suspended, deleted)</td>
+                  <td class="py-3 pl-4">6 (pending, active, expired, revoked, rejected, claimed)</td>
+                </tr>
+                <tr class="border-b border-slate-100">
+                  <td class="py-3 pr-4 font-medium">Discovery</td>
+                  <td class="py-3 px-4">OIDC standard</td>
+                  <td class="py-3 pl-4">Custom /.well-known/agent-configuration</td>
+                </tr>
+                <tr class="border-b border-slate-100">
+                  <td class="py-3 pr-4 font-medium">Target API changes</td>
+                  <td class="py-3 px-4">None (standard JWT)</td>
+                  <td class="py-3 pl-4">Must implement constraint evaluation</td>
+                </tr>
+                <tr class="border-b border-slate-100">
+                  <td class="py-3 pr-4 font-medium">CLI tooling</td>
+                  <td class="py-3 px-4">4 scripts (init, register, token, status)</td>
+                  <td class="py-3 pl-4">None</td>
+                </tr>
+                <tr class="border-b border-slate-100">
+                  <td class="py-3 pr-4 font-medium">Execution modes</td>
+                  <td class="py-3 px-4">Out of scope</td>
+                  <td class="py-3 pl-4">Sync, async, streaming (SSE)</td>
+                </tr>
+                <tr>
+                  <td class="py-3 pr-4 font-medium">License</td>
+                  <td class="py-3 px-4">MIT</td>
+                  <td class="py-3 pl-4">MIT</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- When to Use Which -->
+          <h2 id="when-to-use" class="text-2xl md:text-3xl font-bold mt-12 mb-4">When to Use Which</h2>
+
+          <div class="grid md:grid-cols-2 gap-4 mb-8">
+            <div class="bg-teal-50 border border-teal-200 rounded-xl p-5">
+              <div class="font-semibold text-teal-800 mb-3">Choose AID when:</div>
+              <ul class="text-sm text-teal-900 space-y-2">
+                <li class="flex gap-2"><span class="text-teal-600 flex-shrink-0">&bull;</span> You need agent auth working today, not next quarter</li>
+                <li class="flex gap-2"><span class="text-teal-600 flex-shrink-0">&bull;</span> Your APIs already use roles and scopes</li>
+                <li class="flex gap-2"><span class="text-teal-600 flex-shrink-0">&bull;</span> You don't want to change how target APIs authorize requests</li>
+                <li class="flex gap-2"><span class="text-teal-600 flex-shrink-0">&bull;</span> You want admin control with minimal infrastructure</li>
+                <li class="flex gap-2"><span class="text-teal-600 flex-shrink-0">&bull;</span> Your agents are relatively simple (1 agent, 1 role, N APIs)</li>
+              </ul>
+            </div>
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-5">
+              <div class="font-semibold text-slate-800 mb-3">Consider Agent Auth Protocol when:</div>
+              <ul class="text-sm text-slate-600 space-y-2">
+                <li class="flex gap-2"><span class="text-slate-400 flex-shrink-0">&bull;</span> You're building a platform that hosts many agents</li>
+                <li class="flex gap-2"><span class="text-slate-400 flex-shrink-0">&bull;</span> You need fine-grained capability constraints</li>
+                <li class="flex gap-2"><span class="text-slate-400 flex-shrink-0">&bull;</span> You control both the auth server and target APIs</li>
+                <li class="flex gap-2"><span class="text-slate-400 flex-shrink-0">&bull;</span> You're willing to wait for an implementation to materialize</li>
+                <li class="flex gap-2"><span class="text-slate-400 flex-shrink-0">&bull;</span> Your agents and admins are on different devices/networks</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Closing -->
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-6 mb-8">
+            <h3 class="font-semibold text-slate-800 mb-2">The Bottom Line</h3>
+            <p class="text-slate-700 leading-relaxed">Agent Auth Protocol is the more ambitious specification. AID is the more practical tool. They're philosophically aligned &mdash; both use Ed25519 + OAuth 2.0 and both believe agents need real cryptographic identity. The question is whether you need the complexity of capability-based authorization today, or whether role-based scopes (which every API already understands) get the job done. For most teams, the answer is the latter.</p>
+            <p class="text-slate-700 leading-relaxed mt-3">AID's bet: cover 80% of use cases with 20% of the complexity, ship today, and add sophistication as the market demands it. That's how protocols win adoption.</p>
+          </div>
+
+          <div class="border-t border-slate-200 pt-6 mt-8">
+            <p class="text-sm text-slate-500">
+              <strong>Disclosure:</strong> This article is written by the AID team. We've tried to be fair and accurate about both protocols. Agent Auth Protocol specification is available at <a href="https://agent-auth-protocol.com" class="text-teal-700 hover:underline">agent-auth-protocol.com</a>.
+              AID is open source at <a href="https://github.com/agentmessaging/agent-identity" class="text-teal-700 hover:underline">github.com/agentmessaging/agent-identity</a>.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </article>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-slate-50 border-t border-slate-200 py-6 md:py-8">
+    <div class="max-w-6xl mx-auto px-4 md:px-6">
+      <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div class="flex items-center justify-center md:justify-start gap-2 text-slate-600">
+          <span class="font-mono font-bold text-teal-700">{AID}</span>
+          <span class="text-sm">Agent Identity Protocol</span>
+        </div>
+        <div class="flex flex-wrap items-center justify-center gap-4 md:gap-5 text-xs md:text-sm text-slate-500">
+          <a href="https://github.com/agentmessaging" class="hover:text-teal-700 transition-colors" title="GitHub">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          </a>
+          <a href="https://x.com/agentmessaging" class="hover:text-teal-700 transition-colors" title="X">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <span class="text-slate-300">|</span>
+          <a href="https://github.com/agentmessaging/agent-identity/blob/main/LICENSE" class="hover:text-teal-700 transition-colors">MIT</a>
+          <span>By <a href="https://23blocks.com" class="text-slate-700 hover:text-teal-700 transition-colors">23blocks</a></span>
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
