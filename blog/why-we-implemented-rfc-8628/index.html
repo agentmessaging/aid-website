@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Why We Implemented RFC 8628 for Agent Registration - Agent Identity (AID)</title>
+  <meta name="description" content="AID started with admin-initiated registration. Then we added RFC 8628 Device Authorization Grant so agents on headless servers and CI/CD pipelines could register without an admin present. Here is why.">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+  <link rel="canonical" href="https://agentids.org/blog/why-we-implemented-rfc-8628/">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Why We Implemented RFC 8628 for Agent Registration">
+  <meta property="og:description" content="AID started with admin-initiated registration. Then we added RFC 8628 Device Authorization Grant so agents on headless servers and CI/CD pipelines could register without an admin present. Here is why.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://agentids.org/blog/why-we-implemented-rfc-8628/">
+  <meta property="og:site_name" content="Agent Identity (AID)">
+  <meta property="og:image" content="https://agentids.org/assets/images/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="article:published_time" content="2026-05-20T00:00:00Z">
+  <meta property="article:author" content="Juan Pelaez">
+  <meta property="article:section" content="Protocol Design">
+  <meta property="article:tag" content="Protocol Design">
+  <meta property="article:tag" content="RFC 8628">
+  <meta property="article:tag" content="Standards">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@agentmessaging">
+  <meta name="twitter:creator" content="@jkpelaez">
+  <meta name="twitter:title" content="Why We Implemented RFC 8628 for Agent Registration">
+  <meta name="twitter:description" content="How the OAuth 2.0 Device Authorization Grant maps perfectly to AI agent registration on headless servers and edge devices.">
+  <meta name="twitter:image" content="https://agentids.org/assets/images/og-image.png">
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Why We Implemented RFC 8628 for Agent Registration",
+    "description": "AID started with admin-initiated registration. Then we added RFC 8628 Device Authorization Grant so agents on headless servers and CI/CD pipelines could register without an admin present.",
+    "datePublished": "2026-05-20T00:00:00Z",
+    "dateModified": "2026-05-20T00:00:00Z",
+    "author": {
+      "@type": "Person",
+      "name": "Juan Pelaez",
+      "url": "https://x.com/jkpelaez"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Agent Identity (AID)",
+      "url": "https://agentids.org"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://agentids.org/blog/why-we-implemented-rfc-8628/"
+    },
+    "image": "https://agentids.org/assets/images/og-image.png",
+    "keywords": ["RFC 8628", "Device Authorization Grant", "agent registration", "AID", "OAuth 2.0", "non-human identity", "AI agent authentication"],
+    "articleSection": "Protocol Design",
+    "wordCount": 2100
+  }
+  </script>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/apple-touch-icon.png">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Space Grotesk', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              200: '#99f6e4',
+              300: '#5eead4',
+              400: '#2dd4bf',
+              500: '#14b8a6',
+              600: '#0d9488',
+              700: '#0f766e',
+              800: '#115e59',
+              900: '#134e4a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .gradient-text {
+      background: linear-gradient(135deg, #0f766e 0%, #115e59 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .code-block {
+      background: #1e293b;
+    }
+    article h2 { scroll-margin-top: 5rem; }
+  </style>
+</head>
+<body class="bg-white text-slate-900 font-sans antialiased">
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:shadow-lg">Skip to content</a>
+
+  <!-- Navigation -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 md:px-6 py-3">
+      <div class="flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2 text-base md:text-xl font-mono font-bold text-teal-700">
+          {AID}
+        </a>
+        <div class="flex items-center gap-3 md:gap-6">
+          <a href="/#how-it-works" class="hidden md:block text-slate-900 hover:text-teal-700 transition-colors">How it Works</a>
+          <a href="/#features" class="hidden md:block text-slate-900 hover:text-teal-700 transition-colors">Features</a>
+          <a href="/#protocol" class="hidden md:block text-slate-900 hover:text-teal-700 transition-colors">Protocol</a>
+          <a href="/blog/" class="text-teal-700 font-medium transition-colors text-sm md:text-base">Blog</a>
+          <a href="https://github.com/agentmessaging/agent-identity" class="text-slate-900 hover:text-teal-700 transition-colors">
+            <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main-content">
+    <article class="pt-20 md:pt-24 pb-16 md:pb-24">
+      <div class="max-w-4xl mx-auto px-4 md:px-6">
+
+        <!-- Article Header -->
+        <header class="mb-8 md:mb-12">
+          <div class="mb-4">
+            <a href="/blog/" class="text-sm text-slate-500 hover:text-teal-700 transition-colors inline-flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+              Back to Blog
+            </a>
+          </div>
+          <div class="flex flex-wrap gap-2 mb-4">
+            <span class="bg-teal-50 text-teal-700 text-xs font-medium px-2.5 py-0.5 rounded-full">Protocol Design</span>
+            <span class="bg-teal-50 text-teal-700 text-xs font-medium px-2.5 py-0.5 rounded-full">RFC 8628</span>
+            <span class="bg-teal-50 text-teal-700 text-xs font-medium px-2.5 py-0.5 rounded-full">Standards</span>
+          </div>
+          <h1 class="text-3xl md:text-5xl font-bold leading-tight mb-4 md:mb-6">
+            Why We Implemented RFC 8628 for Agent Registration
+          </h1>
+          <p class="text-base md:text-xl text-slate-600 mb-4 md:mb-6 leading-relaxed">
+            AID started with a single registration path: the admin holds a JWT, registers the agent directly, the agent gets tokens. Simple. But what happens when the agent boots on a headless server at 3am with no admin present? We needed a second path &mdash; and instead of inventing one, we adopted a proven standard.
+          </p>
+          <div class="flex items-center gap-3 text-sm text-slate-500 border-b border-slate-200 pb-6">
+            <div class="flex items-center gap-2">
+              <span class="font-medium text-slate-700">Juan Pel&aacute;ez</span>
+              <a href="https://x.com/jkpelaez" class="text-slate-400 hover:text-teal-700 transition-colors" title="@jkpelaez on X">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              </a>
+            </div>
+            <span class="text-slate-300">|</span>
+            <time datetime="2026-05-20">May 20, 2026</time>
+            <span class="text-slate-300">|</span>
+            <span>8 min read</span>
+          </div>
+        </header>
+
+        <!-- Table of Contents -->
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 md:p-6 mb-8 md:mb-12">
+          <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-3">Contents</h2>
+          <nav class="space-y-2 text-sm md:text-base">
+            <a href="#the-problem" class="block text-slate-700 hover:text-teal-700 transition-colors">The Problem: No Admin at Startup</a>
+            <a href="#why-rfc-8628" class="block text-slate-700 hover:text-teal-700 transition-colors">Why RFC 8628</a>
+            <a href="#two-paths" class="block text-slate-700 hover:text-teal-700 transition-colors">Two Paths, One Protocol</a>
+            <a href="#design-decisions" class="block text-slate-700 hover:text-teal-700 transition-colors">Design Decisions We Made</a>
+            <a href="#three-protocol-stack" class="block text-slate-700 hover:text-teal-700 transition-colors">The Three-Protocol Stack</a>
+            <a href="#whats-next" class="block text-slate-700 hover:text-teal-700 transition-colors">What's Next</a>
+          </nav>
+        </div>
+
+        <!-- Article Body -->
+        <div class="prose prose-slate max-w-none">
+
+          <!-- The Problem -->
+          <h2 id="the-problem" class="text-2xl md:text-3xl font-bold mt-12 mb-4">The Problem: No Admin at Startup</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">AID's original registration flow is clean and direct. The admin authenticates, gets a JWT, and passes it to the <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">aid-register</code> script:</p>
+
+          <div class="code-block rounded-lg p-5 font-mono text-xs md:text-sm text-slate-300 mb-6">
+            <div class="text-slate-500"># Admin-initiated: admin has a valid JWT</div>
+            <div><span class="text-amber-400">aid-register</span> \</div>
+            <div class="pl-4"><span class="text-teal-400">--base-url</span> https://auth.acme.com/acme \</div>
+            <div class="pl-4"><span class="text-teal-400">--token</span> eyJhbGciOiJSUzI1NiJ9... \</div>
+            <div class="pl-4"><span class="text-teal-400">--role-id</span> 3 \</div>
+            <div class="pl-4"><span class="text-teal-400">--description</span> <span class="text-green-400">"support-bot-prod"</span></div>
+            <div class="mt-2 text-slate-500"># Agent receives access_token and refresh_token immediately</div>
+          </div>
+
+          <p class="text-slate-700 leading-relaxed mb-4">This works perfectly when the admin has direct access at the moment of registration. Most local dev and controlled deployment scenarios fit that description.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-4">But a significant class of deployments does not fit that description:</p>
+
+          <ul class="space-y-2 mb-6 text-slate-700">
+            <li class="flex gap-3"><span class="text-teal-600 flex-shrink-0 font-bold">&bull;</span><span><strong>Headless servers</strong>: an agent image boots in a container orchestration system. No admin is logged in. The agent needs credentials to do its job, and there is no human on-site to hand them over.</span></li>
+            <li class="flex gap-3"><span class="text-teal-600 flex-shrink-0 font-bold">&bull;</span><span><strong>CI/CD pipelines</strong>: a new agent is provisioned as part of an automated deployment. The pipeline has no JWT to pass. Requiring one breaks the automation.</span></li>
+            <li class="flex gap-3"><span class="text-teal-600 flex-shrink-0 font-bold">&bull;</span><span><strong>Edge devices</strong>: an agent running on embedded hardware with no keyboard, no browser, and no way for a human to type credentials at startup.</span></li>
+            <li class="flex gap-3"><span class="text-teal-600 flex-shrink-0 font-bold">&bull;</span><span><strong>Async onboarding workflows</strong>: a new agent is deployed by an engineering team, but approval must come from a separate security team. The agent can't just sit idle waiting for a person to show up with a JWT.</span></li>
+          </ul>
+
+          <p class="text-slate-700 leading-relaxed mb-6">In all of these scenarios, the agent exists and is ready to work, but it cannot receive a JWT from an admin. It needs a way to say "I exist, please approve me" without already having credentials. That is a circular problem if you only have one registration path.</p>
+
+          <!-- Why RFC 8628 -->
+          <h2 id="why-rfc-8628" class="text-2xl md:text-3xl font-bold mt-12 mb-4">Why RFC 8628</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">RFC 8628 is the <a href="https://datatracker.ietf.org/doc/html/rfc8628" class="text-teal-700 hover:underline">OAuth 2.0 Device Authorization Grant</a>, published in 2019. It was designed for exactly the scenario described above &mdash; devices with limited input capabilities that need user authorization on a separate device.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-4">The canonical example from the RFC is a smart TV logging into a streaming service. The TV cannot type a username and password (or at least, no one wants to do that). Instead:</p>
+
+          <ol class="space-y-2 mb-6 text-slate-700 list-decimal pl-5">
+            <li>The TV displays a short code and a URL.</li>
+            <li>The user visits the URL on their phone or laptop.</li>
+            <li>The user logs in and approves the TV.</li>
+            <li>The TV polls until it gets tokens.</li>
+          </ol>
+
+          <p class="text-slate-700 leading-relaxed mb-4">The mapping to AI agents is precise:</p>
+
+          <div class="overflow-x-auto mb-6">
+            <table class="w-full text-sm border-collapse">
+              <thead>
+                <tr class="border-b-2 border-slate-200">
+                  <th class="text-left py-3 pr-4 font-semibold text-slate-500 uppercase tracking-wider text-xs">RFC 8628 concept</th>
+                  <th class="text-left py-3 pl-4 font-semibold text-teal-700 uppercase tracking-wider text-xs">AID equivalent</th>
+                </tr>
+              </thead>
+              <tbody class="text-slate-600">
+                <tr class="border-b border-slate-100">
+                  <td class="py-3 pr-4">Device (limited input)</td>
+                  <td class="py-3 pl-4">Agent (headless server, edge device)</td>
+                </tr>
+                <tr class="border-b border-slate-100">
+                  <td class="py-3 pr-4">User (authorizing on browser)</td>
+                  <td class="py-3 pl-4">Admin (approves via authorization URL)</td>
+                </tr>
+                <tr class="border-b border-slate-100">
+                  <td class="py-3 pr-4">User code displayed on TV</td>
+                  <td class="py-3 pl-4">User code shown in agent logs (XXXX-XXXX format)</td>
+                </tr>
+                <tr class="border-b border-slate-100">
+                  <td class="py-3 pr-4">Device polls authorization server</td>
+                  <td class="py-3 pl-4">Agent polls <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">/agent_registrations/status</code></td>
+                </tr>
+                <tr>
+                  <td class="py-3 pr-4">Device receives access token</td>
+                  <td class="py-3 pl-4">Agent receives AID access token + refresh token</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="text-slate-700 leading-relaxed mb-4">We did not invent a new flow. We did not design a custom protocol. We took a proven IETF standard and applied it to a new domain. That matters: every engineer who knows OAuth already understands the shape of this flow. The security properties are well-understood. The edge cases are documented.</p>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-6">
+            <p class="text-sm text-slate-600"><strong>Why not CIBA?</strong> Client-Initiated Backchannel Authentication (CIBA) is another option for out-of-band authorization. It is push-based &mdash; the server sends a notification to the admin rather than the admin polling. CIBA is more suitable for enterprise environments with existing push notification infrastructure. RFC 8628 is simpler to implement and deploy without that infrastructure, which is why we chose it first. CIBA remains on the roadmap.</p>
+          </div>
+
+          <!-- Two Paths, One Protocol -->
+          <h2 id="two-paths" class="text-2xl md:text-3xl font-bold mt-12 mb-4">Two Paths, One Protocol</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">Adding RFC 8628 did not replace admin-initiated registration. Both paths exist in AID v0.3.0, and the resulting agent identity is identical regardless of which path was used.</p>
+
+          <div class="grid md:grid-cols-2 gap-4 mb-8">
+            <div class="bg-teal-50 border border-teal-200 rounded-xl p-5">
+              <div class="font-semibold text-teal-800 mb-3">Path 1: Admin-Initiated</div>
+              <p class="text-sm text-teal-900 mb-3">Admin has a JWT. Registers the agent directly. Agent gets tokens immediately with no polling required.</p>
+              <p class="text-xs text-teal-700 font-medium">Best for: local dev, controlled deployments, scripted environments where an admin token is available.</p>
+            </div>
+            <div class="border border-slate-200 rounded-xl p-5">
+              <div class="font-semibold text-slate-800 mb-3">Path 2: Agent-Initiated (RFC 8628)</div>
+              <p class="text-sm text-slate-600 mb-3">Agent requests registration with its public key. Server returns an authorization URL and user code. Agent polls. Admin approves. Agent gets tokens.</p>
+              <p class="text-xs text-slate-500 font-medium">Best for: headless servers, CI/CD, edge devices, async approval workflows.</p>
+            </div>
+          </div>
+
+          <p class="text-slate-700 leading-relaxed mb-4">The agent-initiated flow looks like this from the agent's perspective:</p>
+
+          <div class="code-block rounded-lg p-5 font-mono text-xs md:text-sm text-slate-300 mb-4">
+            <div class="text-slate-500"># Step 1: Agent requests registration</div>
+            <div><span class="text-amber-400">POST</span> /acme/agent_registrations/request</div>
+            <div class="mt-2">{</div>
+            <div class="pl-4"><span class="text-amber-400">"public_key"</span>: <span class="text-green-400">"ed25519:AAAA..."</span>,</div>
+            <div class="pl-4"><span class="text-amber-400">"description"</span>: <span class="text-green-400">"data-pipeline-agent-prod"</span></div>
+            <div>}</div>
+          </div>
+
+          <div class="code-block rounded-lg p-5 font-mono text-xs md:text-sm text-slate-300 mb-4">
+            <div class="text-slate-500"># Server response (RFC 8628 structure)</div>
+            <div>{</div>
+            <div class="pl-4"><span class="text-amber-400">"authorization_url"</span>: <span class="text-green-400">"https://auth.acme.com/agents/authorize?code=kX9mP2vR"</span>,</div>
+            <div class="pl-4"><span class="text-amber-400">"user_code"</span>: <span class="text-green-400">"KXMP-P2VR"</span>,</div>
+            <div class="pl-4"><span class="text-amber-400">"expires_in"</span>: <span class="text-teal-400">86400</span>,</div>
+            <div class="pl-4"><span class="text-amber-400">"interval"</span>: <span class="text-teal-400">5</span></div>
+            <div>}</div>
+          </div>
+
+          <div class="code-block rounded-lg p-5 font-mono text-xs md:text-sm text-slate-300 mb-4">
+            <div class="text-slate-500"># Step 2: Agent logs the code and polls every 5 seconds</div>
+            <div><span class="text-slate-400">Waiting for admin approval...</span></div>
+            <div><span class="text-slate-400">Authorization URL: https://auth.acme.com/agents/authorize?code=kX9mP2vR</span></div>
+            <div><span class="text-slate-400">Or enter code manually: KXMP-P2VR</span></div>
+            <div class="mt-2"><span class="text-amber-400">GET</span> /acme/agent_registrations/status?code=kX9mP2vR</div>
+            <div class="text-slate-500 mt-1"># Returns {"status": "pending"} until admin approves</div>
+          </div>
+
+          <div class="code-block rounded-lg p-5 font-mono text-xs md:text-sm text-slate-300 mb-6">
+            <div class="text-slate-500"># Step 3: Admin visits URL, verifies fingerprint, assigns role, approves</div>
+            <div class="text-slate-500"># Step 4: Agent's next poll returns tokens</div>
+            <div>{</div>
+            <div class="pl-4"><span class="text-amber-400">"status"</span>: <span class="text-green-400">"active"</span>,</div>
+            <div class="pl-4"><span class="text-amber-400">"access_token"</span>: <span class="text-green-400">"eyJhbGciOiJSUzI1NiJ9..."</span>,</div>
+            <div class="pl-4"><span class="text-amber-400">"refresh_token"</span>: <span class="text-green-400">"rt_abc123..."</span>,</div>
+            <div class="pl-4"><span class="text-amber-400">"token_type"</span>: <span class="text-green-400">"Bearer"</span></div>
+            <div>}</div>
+          </div>
+
+          <!-- Design Decisions -->
+          <h2 id="design-decisions" class="text-2xl md:text-3xl font-bold mt-12 mb-4">Design Decisions We Made</h2>
+          <p class="text-slate-700 leading-relaxed mb-6">RFC 8628 defines the flow. It does not define every implementation detail. Here are the specific choices we made and why.</p>
+
+          <div class="space-y-6 mb-8">
+
+            <div class="border-l-4 border-teal-500 pl-5">
+              <h3 class="font-semibold text-slate-800 mb-2">Opaque authorization codes, not permanent identifiers</h3>
+              <p class="text-slate-700 leading-relaxed text-sm">The authorization URL uses a temporary opaque code (<code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">/agents/authorize?code=kX9mP2vR</code>), not the agent's permanent <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">unique_id</code>. If someone intercepts or sees the URL, they cannot derive the agent's persistent identity. The authorization code expires and is single-use. The agent's actual identity &mdash; its Ed25519 public key and assigned <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">unique_id</code> &mdash; is only revealed to the admin after they authenticate at the authorization URL.</p>
+            </div>
+
+            <div class="border-l-4 border-teal-500 pl-5">
+              <h3 class="font-semibold text-slate-800 mb-2">User codes exclude ambiguous characters</h3>
+              <p class="text-slate-700 leading-relaxed text-sm">User codes use the format <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">XXXX-XXXX</code> with uppercase alphanumeric characters, but the character set explicitly excludes 0, O, 1, I, and L. When an admin reads a user code from a log file or a terminal screen and types it into a browser, there is zero ambiguity between the letter O and the digit 0, or between the letter I and the digit 1. This is a small detail that prevents real support tickets.</p>
+            </div>
+
+            <div class="border-l-4 border-teal-500 pl-5">
+              <h3 class="font-semibold text-slate-800 mb-2">24-hour TTL on authorization codes</h3>
+              <p class="text-slate-700 leading-relaxed text-sm">Authorization codes expire after 24 hours. That is long enough to accommodate asynchronous approval workflows &mdash; an engineering team deploys an agent on Monday, the security team reviews and approves on Tuesday. It is short enough that an unreviewed registration request does not remain open indefinitely. After expiration, the agent must request a new code. There is no way to extend an existing code.</p>
+            </div>
+
+            <div class="border-l-4 border-teal-500 pl-5">
+              <h3 class="font-semibold text-slate-800 mb-2">Human always in control</h3>
+              <p class="text-slate-700 leading-relaxed text-sm">The agent can request registration. It cannot approve itself. An admin must visit the authorization URL, authenticate, review the agent's public key fingerprint, explicitly assign a role, and click approve. There is no configuration option that allows auto-approval. No agent can grant itself permissions, regardless of what it claims in the registration request. The human approval step is not optional and cannot be bypassed.</p>
+            </div>
+
+            <div class="border-l-4 border-teal-500 pl-5">
+              <h3 class="font-semibold text-slate-800 mb-2">Polling interval enforced server-side</h3>
+              <p class="text-slate-700 leading-relaxed text-sm">The server returns an <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">interval</code> field (default: 5 seconds) and enforces it. If an agent polls faster than the specified interval, the server returns a <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">slow_down</code> error per RFC 8628 section 3.5. This prevents a thundering herd of impatient agents from hammering the auth server while waiting for approval.</p>
+            </div>
+
+          </div>
+
+          <!-- Three-Protocol Stack -->
+          <h2 id="three-protocol-stack" class="text-2xl md:text-3xl font-bold mt-12 mb-4">The Three-Protocol Stack</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">AID is the identity layer. It answers one question: <em>who is this agent?</em> It does not orchestrate tools. It does not route messages between agents. Those concerns belong to other protocols.</p>
+
+          <div class="code-block rounded-lg p-5 font-mono text-xs md:text-sm text-slate-300 mb-6">
+            <div class="text-slate-500">┌─────────────────────────────────────────────────┐</div>
+            <div class="text-slate-500">│  MCP (Model Context Protocol)                   │</div>
+            <div class="text-slate-500">│  Agent-to-tool connections                       │</div>
+            <div class="text-slate-500">├─────────────────────────────────────────────────┤</div>
+            <div class="text-slate-500">│  A2A (Agent-to-Agent)                           │</div>
+            <div class="text-slate-500">│  Agent-to-agent messaging                        │</div>
+            <div class="text-slate-500">├─────────────────────────────────────────────────┤</div>
+            <div>│  <span class="text-teal-400">AID (Agent Identity)</span>                            │</div>
+            <div>│  <span class="text-teal-400">Who is this agent? Is it authorized?</span>            │</div>
+            <div class="text-slate-500">└─────────────────────────────────────────────────┘</div>
+          </div>
+
+          <p class="text-slate-700 leading-relaxed mb-4">MCP connections require knowing who the agent is before granting access to tools. A2A message routing requires trusting the sender before processing requests. Both protocols need to verify agent identity. AID provides that identity &mdash; and it does so regardless of which registration path the agent used.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-4">An agent registered by an admin with a JWT and an agent registered via RFC 8628 device authorization produce identical identity artifacts: an Ed25519 keypair, a <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">unique_id</code>, an assigned role, and a set of RS256 JWTs. MCP and A2A do not know or care how the agent was registered. They validate the token, check the role, and proceed.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-6">This is the value of building on standards. RFC 8628 is a well-understood registration path. RS256 JWT is a well-understood token format. Any protocol that can validate a JWT can work with AID agents, regardless of registration path.</p>
+
+          <!-- What's Next -->
+          <h2 id="whats-next" class="text-2xl md:text-3xl font-bold mt-12 mb-4">What's Next</h2>
+          <p class="text-slate-700 leading-relaxed mb-4">With both registration paths shipped and validated against a working reference implementation (the 23blocks Auth API), AID v0.3.0 covers the complete agent lifecycle:</p>
+
+          <div class="code-block rounded-lg p-5 font-mono text-xs md:text-sm text-slate-300 mb-6">
+            <div><span class="text-teal-400">registration</span> <span class="text-slate-500">(admin-initiated or RFC 8628)</span></div>
+            <div class="pl-4 mt-1"><span class="text-slate-500">&darr;</span></div>
+            <div><span class="text-green-400">token issuance</span> <span class="text-slate-500">(RS256 JWT + refresh token)</span></div>
+            <div class="pl-4 mt-1"><span class="text-slate-500">&darr;</span></div>
+            <div><span class="text-amber-400">introspection</span> <span class="text-slate-500">(RFC 7662, real-time agent status)</span></div>
+            <div class="pl-4 mt-1"><span class="text-slate-500">&darr;</span></div>
+            <div><span class="text-red-400">suspension</span> <span class="text-slate-500">(reversible, immediate effect on introspection)</span></div>
+            <div class="pl-4 mt-1"><span class="text-slate-500">&darr;</span></div>
+            <div><span class="text-green-400">reactivation</span> <span class="text-slate-500">(admin restores the agent, no re-registration needed)</span></div>
+          </div>
+
+          <p class="text-slate-700 leading-relaxed mb-4">The next two areas of work are key rotation and federation.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-4"><strong>Key rotation</strong>: agents need to rotate their Ed25519 keypairs without losing their identity or requiring re-approval. The rotation flow must preserve the agent's <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">unique_id</code> and role assignment while replacing the underlying cryptographic material. The auth server needs to track both the current and previous public key during a transition window.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-6"><strong>Federation</strong>: an agent registered with one AID-compatible auth server should be able to present its identity to a different server. This requires a trust model between AID providers. We are watching how OIDC federation evolves before committing to an approach. That is a separate post.</p>
+
+          <div class="bg-teal-50 border border-teal-200 rounded-xl p-6 mb-8">
+            <h3 class="font-semibold text-teal-800 mb-2">Try It Today</h3>
+            <p class="text-teal-900 text-sm leading-relaxed mb-3">Agent-initiated registration via RFC 8628 is available in the AID CLI and the 23blocks Auth API reference implementation. The CLI handles polling automatically &mdash; you run one command, it prints the authorization URL and user code, and waits for admin approval.</p>
+            <div class="code-block rounded-lg p-4 font-mono text-xs text-slate-300">
+              <div class="text-slate-500"># Agent-initiated registration</div>
+              <div><span class="text-amber-400">aid-register</span> \</div>
+              <div class="pl-4"><span class="text-teal-400">--base-url</span> https://auth.acme.com/acme \</div>
+              <div class="pl-4"><span class="text-teal-400">--mode</span> device</div>
+              <div class="mt-2 text-slate-500"># Prints authorization URL + user code, then polls until approved</div>
+            </div>
+          </div>
+
+          <div class="border-t border-slate-200 pt-6 mt-8">
+            <p class="text-sm text-slate-500">
+              AID is open source under MIT at <a href="https://github.com/agentmessaging/agent-identity" class="text-teal-700 hover:underline">github.com/agentmessaging/agent-identity</a>.
+              RFC 8628 specification is at <a href="https://datatracker.ietf.org/doc/html/rfc8628" class="text-teal-700 hover:underline">datatracker.ietf.org/doc/html/rfc8628</a>.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </article>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-slate-50 border-t border-slate-200 py-6 md:py-8">
+    <div class="max-w-6xl mx-auto px-4 md:px-6">
+      <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div class="flex items-center justify-center md:justify-start gap-2 text-slate-600">
+          <span class="font-mono font-bold text-teal-700">{AID}</span>
+          <span class="text-sm">Agent Identity Protocol</span>
+        </div>
+        <div class="flex flex-wrap items-center justify-center gap-4 md:gap-5 text-xs md:text-sm text-slate-500">
+          <a href="https://github.com/agentmessaging" class="hover:text-teal-700 transition-colors" title="GitHub">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          </a>
+          <a href="https://x.com/agentmessaging" class="hover:text-teal-700 transition-colors" title="X">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <span class="text-slate-300">|</span>
+          <a href="https://github.com/agentmessaging/agent-identity/blob/main/LICENSE" class="hover:text-teal-700 transition-colors">MIT</a>
+          <span>By <a href="https://23blocks.com" class="text-slate-700 hover:text-teal-700 transition-colors">23blocks</a></span>
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

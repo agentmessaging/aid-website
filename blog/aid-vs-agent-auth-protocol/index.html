@@ -42,7 +42,7 @@
     "headline": "AID vs Agent Auth Protocol: Role-Based Simplicity vs Capability-Based Complexity",
     "description": "A detailed comparison of AID and Agent Auth Protocol for AI agent authentication.",
     "datePublished": "2026-03-25T00:00:00Z",
-    "dateModified": "2026-03-25T00:00:00Z",
+    "dateModified": "2026-05-20T00:00:00Z",
     "author": {
       "@type": "Person",
       "name": "Juan Pelaez",
@@ -259,8 +259,8 @@
 
           <div class="grid md:grid-cols-2 gap-4 mb-6">
             <div class="border border-slate-200 rounded-xl p-5">
-              <div class="font-semibold mb-2">AID</div>
-              <p class="text-sm text-slate-600">Admin passes their JWT during registration: <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">aid-register --token &lt;ADMIN_JWT&gt; --role-id 3</code>. The admin's JWT proves they have permission to register agents with that role. Simple, stateless, one HTTP call.</p>
+              <div class="font-semibold mb-2">AID (v0.3.0)</div>
+              <p class="text-sm text-slate-600">Two paths: <strong>Admin-initiated</strong> &mdash; admin passes their JWT: <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">aid-register --token &lt;ADMIN_JWT&gt; --role-id 3</code>. <strong>Agent-initiated</strong> (new in v0.3.0) &mdash; agent requests registration, server returns an <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">authorization_url</code> and <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">user_code</code> following RFC 8628. Admin approves via URL or manual code entry.</p>
             </div>
             <div class="border border-slate-200 rounded-xl p-5">
               <div class="font-semibold mb-2">Agent Auth Protocol</div>
@@ -269,7 +269,7 @@
           </div>
 
           <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 mb-6">
-            <p class="text-sm text-slate-600"><strong>Our take:</strong> Device Authorization and CIBA are well-established RFCs, but they're designed for scenarios where the human and the agent are on different devices. In most AI agent deployments today, the admin has direct access to both the agent and the auth server. AID's approach &mdash; admin passes their JWT directly &mdash; handles this without extra infrastructure. If your agents run on disconnected devices where the admin can't provide a JWT, the Device Authorization flow is genuinely useful.</p>
+            <p class="text-sm text-slate-600"><strong>Our take:</strong> Both protocols now support RFC 8628 Device Authorization. AID v0.3.0 added agent-initiated registration alongside its original admin-JWT path, giving teams flexibility: use the simple admin-JWT flow when the admin has direct access, or use RFC 8628 when agents run on headless devices. Agent Auth Protocol additionally supports CIBA for push-based approval. In practice, most teams will use whichever path fits their deployment &mdash; and having both options is better than being locked into one.</p>
           </div>
 
           <!-- Lifecycle -->
@@ -322,8 +322,8 @@
               <p class="text-sm text-slate-600 mt-1">Sync, async, and streaming (SSE) patterns for agent operations. AID doesn't address execution semantics &mdash; by design, since AID is identity-only.</p>
             </div>
             <div class="border-l-4 border-slate-300 pl-4">
-              <p class="font-semibold text-slate-800">More formal approval flows</p>
-              <p class="text-sm text-slate-600 mt-1">Device Authorization Grant (RFC 8628) and CIBA provide standardized human-in-the-loop approval. Good for scenarios where admin and agent are on different devices.</p>
+              <p class="font-semibold text-slate-800">CIBA push-based approval</p>
+              <p class="text-sm text-slate-600 mt-1">Both protocols now support RFC 8628 Device Authorization. Agent Auth Protocol additionally supports CIBA (Client-Initiated Backchannel Authentication) for push-based admin notifications &mdash; useful in enterprise environments with existing notification infrastructure.</p>
             </div>
           </div>
 
@@ -390,8 +390,8 @@
                 </tr>
                 <tr class="border-b border-slate-100">
                   <td class="py-3 pr-4 font-medium">Human approval</td>
-                  <td class="py-3 px-4">Admin JWT</td>
-                  <td class="py-3 pl-4">Device Auth (RFC 8628) + CIBA</td>
+                  <td class="py-3 px-4">Admin JWT + RFC 8628</td>
+                  <td class="py-3 pl-4">RFC 8628 + CIBA</td>
                 </tr>
                 <tr class="border-b border-slate-100">
                   <td class="py-3 pr-4 font-medium">Token format</td>

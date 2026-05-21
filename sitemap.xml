@@ -13,8 +13,14 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://agentids.org/blog/why-we-implemented-rfc-8628/</loc>
+    <lastmod>2026-05-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://agentids.org/blog/aid-vs-agent-auth-protocol/</loc>
-    <lastmod>2026-03-25</lastmod>
+    <lastmod>2026-05-20</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

@@ -108,7 +108,23 @@
     <section class="pb-16 md:pb-24">
       <div class="max-w-4xl mx-auto px-4 md:px-6">
         <div class="grid gap-6">
-          <!-- Post Card -->
+          <!-- Post Card: RFC 8628 -->
+          <a href="/blog/why-we-implemented-rfc-8628/" class="group bg-white border border-slate-200 hover:border-teal-400 hover:shadow-md rounded-xl md:rounded-2xl p-5 md:p-8 transition-all">
+            <div class="flex flex-wrap gap-2 mb-3">
+              <span class="bg-teal-50 text-teal-700 text-xs font-medium px-2.5 py-0.5 rounded-full">Protocol Design</span>
+              <span class="bg-teal-50 text-teal-700 text-xs font-medium px-2.5 py-0.5 rounded-full">RFC 8628</span>
+              <span class="bg-teal-50 text-teal-700 text-xs font-medium px-2.5 py-0.5 rounded-full">Standards</span>
+            </div>
+            <h2 class="text-xl md:text-2xl font-semibold mb-2 md:mb-3 group-hover:text-teal-700 transition-colors">Why We Implemented RFC 8628 for Agent Registration</h2>
+            <p class="text-slate-600 text-sm md:text-base mb-4">AI agents on headless servers can't receive an admin JWT. We adopted the OAuth 2.0 Device Authorization Grant so agents can request their own registration while keeping humans in control of approval.</p>
+            <div class="flex items-center gap-3 text-xs md:text-sm text-slate-500">
+              <time datetime="2026-05-20">May 20, 2026</time>
+              <span class="text-slate-300">|</span>
+              <span>8 min read</span>
+            </div>
+          </a>
+
+          <!-- Post Card: AID vs Agent Auth Protocol -->
           <a href="/blog/aid-vs-agent-auth-protocol/" class="group bg-white border border-slate-200 hover:border-teal-400 hover:shadow-md rounded-xl md:rounded-2xl p-5 md:p-8 transition-all">
             <div class="flex flex-wrap gap-2 mb-3">
               <span class="bg-teal-50 text-teal-700 text-xs font-medium px-2.5 py-0.5 rounded-full">Comparison</span>
