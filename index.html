@@ -243,7 +243,7 @@
       <div class="max-w-3xl">
         <div class="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 rounded-full px-3 py-1 text-xs md:text-sm text-teal-800 mb-4 md:mb-6">
           <span class="w-1.5 h-1.5 md:w-2 md:h-2 bg-teal-500 rounded-full animate-pulse"></span>
-          v0.1.0 &mdash; built on AMP
+          v0.3.0 &mdash; RFC 8628 aligned
         </div>
 
         <h1 class="text-3xl md:text-5xl lg:text-7xl font-bold leading-tight mb-4 md:mb-6">
@@ -253,6 +253,7 @@
         <p class="text-base md:text-xl text-slate-600 mb-6 md:mb-8 leading-relaxed">
           Open protocol for AI agent authentication and authorization.
           Ed25519 cryptographic identity, OAuth 2.0 token exchange, scoped JWTs.
+          Agent-initiated registration with human approval.
           No passwords. No API keys. No secrets to rotate.
         </p>
 
@@ -511,8 +512,103 @@
     </div>
   </section>
 
+  <!-- Agent Registration -->
+  <section id="agent-registration" class="py-12 md:py-24 bg-slate-50 border-t border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 md:px-6">
+      <h2 class="text-2xl md:text-4xl font-bold text-center mb-3 md:mb-4">Agent Registration</h2>
+      <p class="text-slate-600 text-center text-sm md:text-base max-w-2xl mx-auto mb-8 md:mb-12">Two paths to identity. Both require human approval.</p>
+
+      <div class="grid gap-4 md:grid-cols-2 md:gap-8">
+        <!-- Admin-Initiated -->
+        <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-5 md:p-8 shadow-sm">
+          <div class="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 rounded-full px-3 py-1 text-xs text-teal-800 mb-4">
+            <svg class="w-4 h-4 text-teal-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+            Admin has the token
+          </div>
+          <h3 class="text-lg md:text-xl font-semibold mb-4">Admin-Initiated</h3>
+          <p class="text-sm text-slate-600 mb-4">Admin has the key, registers directly. Agent gets tokens immediately.</p>
+
+          <div class="space-y-3">
+            <div class="flex items-start gap-3">
+              <span class="flex-shrink-0 w-6 h-6 bg-teal-100 text-teal-800 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+              <div>
+                <p class="text-sm text-slate-700 font-medium">Agent initializes</p>
+                <code class="text-xs bg-slate-100 px-2 py-1 rounded block mt-1">aid-init --name support-agent</code>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="flex-shrink-0 w-6 h-6 bg-teal-100 text-teal-800 rounded-full flex items-center justify-center text-xs font-bold">2</span>
+              <div>
+                <p class="text-sm text-slate-700 font-medium">Admin registers with role</p>
+                <code class="text-xs bg-slate-100 px-2 py-1 rounded block mt-1">aid-register --auth URL --token JWT --role-id 3</code>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="flex-shrink-0 w-6 h-6 bg-teal-100 text-teal-800 rounded-full flex items-center justify-center text-xs font-bold">3</span>
+              <div>
+                <p class="text-sm text-slate-700 font-medium">Agent gets tokens immediately</p>
+                <code class="text-xs bg-slate-100 px-2 py-1 rounded block mt-1">aid-token --auth URL</code>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Agent-Initiated -->
+        <div class="bg-white border border-slate-200 rounded-xl md:rounded-2xl p-5 md:p-8 shadow-sm">
+          <div class="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-full px-3 py-1 text-xs text-amber-800 mb-4">
+            <svg class="w-4 h-4 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+            RFC 8628 Device Flow
+          </div>
+          <h3 class="text-lg md:text-xl font-semibold mb-4">Agent-Initiated (RFC 8628)</h3>
+          <p class="text-sm text-slate-600 mb-4">Agent requests access, admin approves later.</p>
+
+          <div class="space-y-3">
+            <div class="flex items-start gap-3">
+              <span class="flex-shrink-0 w-6 h-6 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center text-xs font-bold">1</span>
+              <div>
+                <p class="text-sm text-slate-700 font-medium">Agent requests registration</p>
+                <code class="text-xs bg-slate-100 px-2 py-1 rounded block mt-1">aid-request --auth URL --description "..."</code>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="flex-shrink-0 w-6 h-6 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center text-xs font-bold">2</span>
+              <div>
+                <p class="text-sm text-slate-700 font-medium">Server returns authorization_url + user_code</p>
+                <code class="text-xs bg-slate-100 px-2 py-1 rounded block mt-1">XXXX-XXXX</code>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="flex-shrink-0 w-6 h-6 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center text-xs font-bold">3</span>
+              <div>
+                <p class="text-sm text-slate-700 font-medium">Admin visits URL, verifies fingerprint, selects role, approves</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-3">
+              <span class="flex-shrink-0 w-6 h-6 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center text-xs font-bold">4</span>
+              <div>
+                <p class="text-sm text-slate-700 font-medium">Agent polls, then gets tokens</p>
+                <code class="text-xs bg-slate-100 px-2 py-1 rounded block mt-1">aid-token --auth URL</code>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RFC 8628 callout -->
+      <div class="mt-8 bg-teal-50 border border-teal-200 rounded-xl p-5 md:p-6">
+        <div class="flex items-start gap-3">
+          <svg class="w-5 h-5 text-teal-700 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <div>
+            <p class="text-sm md:text-base text-teal-900 font-medium mb-1">Inspired by RFC 8628 (Device Authorization Grant)</p>
+            <p class="text-sm text-teal-800">The response includes <code class="bg-teal-100 px-1.5 py-0.5 rounded text-xs">authorization_url</code>, <code class="bg-teal-100 px-1.5 py-0.5 rounded text-xs">user_code</code>, <code class="bg-teal-100 px-1.5 py-0.5 rounded text-xs">expires_in</code>, and <code class="bg-teal-100 px-1.5 py-0.5 rounded text-xs">interval</code> &mdash; familiar to any OAuth implementer.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Features -->
-  <section id="features" class="py-12 md:py-24 bg-slate-50 border-t border-slate-200">
+  <section id="features" class="py-12 md:py-24 border-t border-slate-200">
     <div class="max-w-6xl mx-auto px-4 md:px-6">
       <h2 class="text-2xl md:text-4xl font-bold text-center mb-3 md:mb-4">Why AID?</h2>
       <p class="text-slate-600 text-center text-sm md:text-base max-w-2xl mx-auto mb-8 md:mb-16">Built for the $11B non-human identity market. Open, standards-based, cloud-agnostic.</p>
@@ -735,64 +831,82 @@
   <section class="py-12 md:py-24 border-t border-slate-200">
     <div class="max-w-6xl mx-auto px-4 md:px-6">
       <h2 class="text-2xl md:text-4xl font-bold text-center mb-3 md:mb-4">The Landscape</h2>
-      <p class="text-slate-600 text-center text-sm md:text-base max-w-2xl mx-auto mb-8 md:mb-12">Non-human identity is an $11.3B market. Here's where AID fits.</p>
+      <p class="text-slate-600 text-center text-sm md:text-base max-w-2xl mx-auto mb-8 md:mb-12">AID is the identity layer underneath MCP and A2A.</p>
 
       <div class="overflow-x-auto">
         <table class="w-full text-xs md:text-sm">
           <thead>
             <tr class="border-b-2 border-slate-200">
-              <th class="text-left py-3 px-2 md:px-4 font-semibold"></th>
+              <th class="text-left py-3 px-2 md:px-4 font-semibold">Feature</th>
               <th class="text-left py-3 px-2 md:px-4 font-semibold text-teal-700">AID</th>
+              <th class="text-left py-3 px-2 md:px-4 font-semibold">Google A2A</th>
+              <th class="text-left py-3 px-2 md:px-4 font-semibold">MCP</th>
               <th class="text-left py-3 px-2 md:px-4 font-semibold">Entra Agent ID</th>
-              <th class="text-left py-3 px-2 md:px-4 font-semibold">AWS AgentCore</th>
-              <th class="text-left py-3 px-2 md:px-4 font-semibold">API Keys</th>
+              <th class="text-left py-3 px-2 md:px-4 font-semibold">SPIFFE</th>
             </tr>
           </thead>
           <tbody class="text-slate-600">
             <tr class="border-b border-slate-100">
+              <td class="py-3 px-2 md:px-4 font-medium text-slate-900">Focus</td>
+              <td class="py-3 px-2 md:px-4 text-teal-700 font-medium">Agent auth &amp; identity</td>
+              <td class="py-3 px-2 md:px-4">Agent-to-agent coordination</td>
+              <td class="py-3 px-2 md:px-4">Agent-to-tool connectivity</td>
+              <td class="py-3 px-2 md:px-4">Enterprise agent governance</td>
+              <td class="py-3 px-2 md:px-4">Workload identity</td>
+            </tr>
+            <tr class="border-b border-slate-100">
+              <td class="py-3 px-2 md:px-4 font-medium text-slate-900">Auth Mechanism</td>
+              <td class="py-3 px-2 md:px-4 text-teal-700 font-medium">Ed25519 + PoP</td>
+              <td class="py-3 px-2 md:px-4">OAuth 2.0 / mTLS</td>
+              <td class="py-3 px-2 md:px-4">OAuth 2.1 + PKCE</td>
+              <td class="py-3 px-2 md:px-4">Federated Identity</td>
+              <td class="py-3 px-2 md:px-4">X.509 SVIDs</td>
+            </tr>
+            <tr class="border-b border-slate-100">
+              <td class="py-3 px-2 md:px-4 font-medium text-slate-900">Agent Registration</td>
+              <td class="py-3 px-2 md:px-4 text-teal-700 font-medium">Self-service + admin approval</td>
+              <td class="py-3 px-2 md:px-4">Agent Cards</td>
+              <td class="py-3 px-2 md:px-4">Server-managed</td>
+              <td class="py-3 px-2 md:px-4">Blueprint + Azure</td>
+              <td class="py-3 px-2 md:px-4">Attestation</td>
+            </tr>
+            <tr class="border-b border-slate-100">
               <td class="py-3 px-2 md:px-4 font-medium text-slate-900">Cloud Lock-in</td>
               <td class="py-3 px-2 md:px-4 text-teal-700 font-medium">None</td>
+              <td class="py-3 px-2 md:px-4">None</td>
+              <td class="py-3 px-2 md:px-4">None</td>
               <td class="py-3 px-2 md:px-4">Azure</td>
-              <td class="py-3 px-2 md:px-4">AWS</td>
-              <td class="py-3 px-2 md:px-4">None</td>
-            </tr>
-            <tr class="border-b border-slate-100">
-              <td class="py-3 px-2 md:px-4 font-medium text-slate-900">Crypto Identity</td>
-              <td class="py-3 px-2 md:px-4 text-teal-700 font-medium">Ed25519</td>
-              <td class="py-3 px-2 md:px-4">Certificates</td>
-              <td class="py-3 px-2 md:px-4">IAM Roles</td>
-              <td class="py-3 px-2 md:px-4">None</td>
-            </tr>
-            <tr class="border-b border-slate-100">
-              <td class="py-3 px-2 md:px-4 font-medium text-slate-900">Secret Rotation</td>
-              <td class="py-3 px-2 md:px-4 text-teal-700 font-medium">Not needed</td>
-              <td class="py-3 px-2 md:px-4">Auto</td>
-              <td class="py-3 px-2 md:px-4">Auto</td>
-              <td class="py-3 px-2 md:px-4">Manual</td>
-            </tr>
-            <tr class="border-b border-slate-100">
-              <td class="py-3 px-2 md:px-4 font-medium text-slate-900">Multi-Tenant</td>
-              <td class="py-3 px-2 md:px-4 text-teal-700 font-medium">Native</td>
-              <td class="py-3 px-2 md:px-4">Via Azure AD</td>
-              <td class="py-3 px-2 md:px-4">Via IAM</td>
-              <td class="py-3 px-2 md:px-4">Manual</td>
+              <td class="py-3 px-2 md:px-4">None (infra)</td>
             </tr>
             <tr class="border-b border-slate-100">
               <td class="py-3 px-2 md:px-4 font-medium text-slate-900">Open Source</td>
               <td class="py-3 px-2 md:px-4 text-teal-700 font-medium">MIT</td>
+              <td class="py-3 px-2 md:px-4">Apache 2.0</td>
+              <td class="py-3 px-2 md:px-4">Apache 2.0</td>
               <td class="py-3 px-2 md:px-4">No</td>
-              <td class="py-3 px-2 md:px-4">No</td>
-              <td class="py-3 px-2 md:px-4">N/A</td>
+              <td class="py-3 px-2 md:px-4">Apache 2.0</td>
             </tr>
             <tr>
-              <td class="py-3 px-2 md:px-4 font-medium text-slate-900">Price</td>
-              <td class="py-3 px-2 md:px-4 text-teal-700 font-medium">Free</td>
-              <td class="py-3 px-2 md:px-4">$$$/mo</td>
-              <td class="py-3 px-2 md:px-4">$$$/mo</td>
-              <td class="py-3 px-2 md:px-4">Free</td>
+              <td class="py-3 px-2 md:px-4 font-medium text-slate-900">Complementary</td>
+              <td class="py-3 px-2 md:px-4 text-teal-700 font-medium">&mdash;</td>
+              <td class="py-3 px-2 md:px-4"><span class="text-teal-700">&#10003;</span> AID provides identity</td>
+              <td class="py-3 px-2 md:px-4"><span class="text-teal-700">&#10003;</span> AID provides identity</td>
+              <td class="py-3 px-2 md:px-4">Overlaps</td>
+              <td class="py-3 px-2 md:px-4">Different layer</td>
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Three-Protocol Stack callout -->
+      <div class="mt-8 bg-teal-50 border border-teal-200 rounded-xl p-5 md:p-6">
+        <div class="flex items-start gap-3">
+          <svg class="w-5 h-5 text-teal-700 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          <div>
+            <p class="text-sm md:text-base text-teal-900 font-medium mb-1">AID + MCP + A2A: The Three-Protocol Stack</p>
+            <p class="text-sm text-teal-800">MCP connects agents to tools. A2A connects agents to agents. AID proves who each agent is. Use AID as the identity layer, MCP for tool access, and A2A for agent coordination.</p>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -828,6 +942,10 @@
         <div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
           <div class="text-teal-700 font-mono font-bold mb-2">6. Lifecycle Management</div>
           <p class="text-sm text-slate-600">Add <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">suspend</code> and <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">reactivate</code> endpoints. States: <strong>pending &rarr; active &harr; suspended &rarr; deleted</strong>. Suspended agents are blocked from token issuance and flagged via introspection.</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+          <div class="text-teal-700 font-mono font-bold mb-2">7. Agent-Initiated Registration</div>
+          <p class="text-sm text-slate-600">Add <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">POST /agent_registrations/request</code> for agents to self-register. Return <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">authorization_url</code> with an opaque temporary code (not the agent ID). Add <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">GET /agent_registrations/resolve?code={code}</code> for the admin UI. Follows RFC 8628 Device Authorization pattern.</p>
         </div>
       </div>
 

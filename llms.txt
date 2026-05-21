@@ -105,6 +105,37 @@ States: pending → active ↔ suspended → deleted
 Minimal: No AID-specific code needed. Validate RS256 JWTs using the auth server's JWKS endpoint.
 Full: Also call the introspection endpoint for real-time suspension checking.
 
+## Agent-Initiated Registration (RFC 8628)
+
+Agents can request their own registration without an admin token:
+
+1. Agent sends POST /agent_registrations/request with public key and description
+2. Server creates a pending registration and returns authorization_url + user_code
+3. Admin visits the authorization URL, verifies the agent's fingerprint, and approves with a role
+4. Agent polls for status, then gets tokens once approved
+
+The authorization URL uses an opaque temporary code (not the agent ID) to prevent information leakage.
+Response fields follow RFC 8628: authorization_url, user_code, expires_in, interval.
+
+Standard authorization path: /agents/authorize?code={opaque_code}
+Manual entry path: /agents/authorize (admin types user_code manually)
+Resolve endpoint: GET /agent_registrations/resolve?code={code}
+
+## Complementary to MCP and A2A
+
+AID is the identity layer underneath MCP (agent-to-tool) and A2A (agent-to-agent):
+- MCP connects agents to tools — AID proves who the agent is before connecting
+- A2A connects agents to agents — AID provides the authentication that A2A requires
+- AID is NOT competing with MCP or A2A — it's the missing identity piece they both need
+
+## Lifecycle Endpoints
+
+All lifecycle endpoints use :unique_id (the agent's permanent UUID), not the temporary authorization code:
+- POST /agent_registrations/:unique_id/approve — approve pending + assign role
+- POST /agent_registrations/:unique_id/reject — reject pending
+- POST /agent_registrations/:unique_id/suspend — block token issuance
+- POST /agent_registrations/:unique_id/reactivate — restore access
+
 ## Links
 
 - Protocol specification: https://agentids.org
