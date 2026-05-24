@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AID 2026 Roadmap: Discovery, RFCs, and the IETF</title>
+  <meta name="description" content="What we just shipped (RFC 9728/8414 discovery), the standards we anchor to, and what's next for the Agent Identity protocol in 2026.">
+  <meta name="keywords" content="AID, Agent Identity, roadmap 2026, RFC 9728, RFC 8414, RFC 8628, RFC 7662, OAuth 2.0, IETF, discovery, agent authentication, non-human identity">
+  <meta name="author" content="Juan Peláez">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+  <link rel="canonical" href="https://agentids.org/blog/aid-2026-roadmap/">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="AID 2026 Roadmap: Discovery, RFCs, and the IETF">
+  <meta property="og:description" content="What we just shipped (RFC 9728/8414 discovery), the standards we anchor to, and what's next for the Agent Identity protocol in 2026.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://agentids.org/blog/aid-2026-roadmap/">
+  <meta property="og:site_name" content="Agent Identity (AID)">
+  <meta property="og:image" content="https://agentids.org/assets/images/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Agent Identity (AID) Protocol">
+  <meta property="og:locale" content="en_US">
+  <meta property="article:published_time" content="2026-05-24T00:00:00Z">
+  <meta property="article:modified_time" content="2026-05-24T00:00:00Z">
+  <meta property="article:author" content="Juan Peláez">
+  <meta property="article:section" content="Roadmap">
+  <meta property="article:tag" content="Roadmap">
+  <meta property="article:tag" content="RFC 9728">
+  <meta property="article:tag" content="RFC 8414">
+  <meta property="article:tag" content="Discovery">
+  <meta property="article:tag" content="IETF">
+  <meta property="article:tag" content="Agent Identity">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@agentmessaging">
+  <meta name="twitter:creator" content="@jkpelaez">
+  <meta name="twitter:title" content="AID 2026 Roadmap: Discovery, RFCs, and the IETF">
+  <meta name="twitter:description" content="What we shipped this week, the standards we anchor to, and what's next.">
+  <meta name="twitter:image" content="https://agentids.org/assets/images/og-image.png">
+  <meta name="twitter:image:alt" content="Agent Identity (AID) Protocol">
+
+  <!-- JSON-LD: BlogPosting -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "AID 2026 Roadmap: Discovery, RFCs, and the IETF",
+    "description": "What we just shipped (RFC 9728/8414 discovery), the standards we anchor to, and what's next for the Agent Identity protocol in 2026.",
+    "datePublished": "2026-05-24T00:00:00Z",
+    "dateModified": "2026-05-24T00:00:00Z",
+    "author": {
+      "@type": "Person",
+      "name": "Juan Peláez",
+      "url": "https://x.com/jkpelaez"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Agent Identity (AID)",
+      "url": "https://agentids.org",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://agentids.org/assets/images/og-image.png"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://agentids.org/blog/aid-2026-roadmap/"
+    },
+    "image": "https://agentids.org/assets/images/og-image.png",
+    "keywords": ["AID", "roadmap", "RFC 9728", "RFC 8414", "discovery", "IETF", "OAuth 2.0", "agent identity"],
+    "articleSection": "Roadmap",
+    "wordCount": 2400,
+    "inLanguage": "en-US",
+    "isPartOf": {
+      "@type": "Blog",
+      "name": "Agent Identity (AID) Blog",
+      "url": "https://agentids.org/blog/"
+    }
+  }
+  </script>
+
+  <!-- JSON-LD: BreadcrumbList -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://agentids.org/" },
+      { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://agentids.org/blog/" },
+      { "@type": "ListItem", "position": 3, "name": "AID 2026 Roadmap: Discovery, RFCs, and the IETF", "item": "https://agentids.org/blog/aid-2026-roadmap/" }
+    ]
+  }
+  </script>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/apple-touch-icon.png">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Space Grotesk', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4',
+              400: '#2dd4bf', 500: '#14b8a6', 600: '#0d9488', 700: '#0f766e',
+              800: '#115e59', 900: '#134e4a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .gradient-text {
+      background: linear-gradient(135deg, #0f766e 0%, #115e59 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .code-block { background: #1e293b; }
+    article h2 { scroll-margin-top: 5rem; }
+  </style>
+</head>
+<body class="bg-white text-slate-900 font-sans antialiased">
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:shadow-lg">Skip to content</a>
+
+  <!-- Navigation -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 md:px-6 py-3">
+      <div class="flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2 text-base md:text-xl font-mono font-bold text-teal-700">{AID}</a>
+        <div class="flex items-center gap-3 md:gap-6">
+          <a href="/#how-it-works" class="hidden md:block text-slate-900 hover:text-teal-700 transition-colors">How it Works</a>
+          <a href="/#features" class="hidden md:block text-slate-900 hover:text-teal-700 transition-colors">Features</a>
+          <a href="/#protocol" class="hidden md:block text-slate-900 hover:text-teal-700 transition-colors">Protocol</a>
+          <a href="/blog/" class="text-teal-700 font-medium transition-colors text-sm md:text-base">Blog</a>
+          <a href="https://github.com/agentmessaging/agent-identity" class="text-slate-900 hover:text-teal-700 transition-colors" aria-label="GitHub">
+            <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main-content">
+    <article class="pt-20 md:pt-24 pb-16 md:pb-24">
+      <div class="max-w-4xl mx-auto px-4 md:px-6">
+
+        <!-- Article Header -->
+        <header class="mb-8 md:mb-12">
+          <div class="mb-4">
+            <a href="/blog/" class="text-sm text-slate-500 hover:text-teal-700 transition-colors inline-flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+              Back to Blog
+            </a>
+          </div>
+          <div class="flex flex-wrap gap-2 mb-4">
+            <span class="bg-teal-50 text-teal-700 text-xs font-medium px-2.5 py-0.5 rounded-full">Roadmap</span>
+            <span class="bg-teal-50 text-teal-700 text-xs font-medium px-2.5 py-0.5 rounded-full">Standards</span>
+            <span class="bg-teal-50 text-teal-700 text-xs font-medium px-2.5 py-0.5 rounded-full">Discovery</span>
+          </div>
+          <h1 class="text-3xl md:text-5xl font-bold leading-tight mb-4 md:mb-6">
+            AID 2026 Roadmap: Discovery, RFCs, and the IETF
+          </h1>
+          <p class="text-base md:text-xl text-slate-600 mb-4 md:mb-6 leading-relaxed">
+            This week we shipped <a href="https://github.com/agentmessaging/agent-identity/pull/10" class="text-teal-700 hover:underline">RFC 9728/8414 discovery</a> in AID v1.1. An agent can now find an AID-enabled auth server starting from just a resource URL — no per-tenant configuration. Here's what landed, the standards table that backs it, and the seven backlog items shaping the rest of 2026.
+          </p>
+          <div class="flex items-center gap-3 text-sm text-slate-500 border-b border-slate-200 pb-6">
+            <div class="flex items-center gap-2">
+              <span class="font-medium text-slate-700">Juan Peláez</span>
+              <a href="https://x.com/jkpelaez" class="text-slate-400 hover:text-teal-700 transition-colors" title="@jkpelaez on X" aria-label="Author on X">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              </a>
+            </div>
+            <span class="text-slate-300">|</span>
+            <time datetime="2026-05-24">May 24, 2026</time>
+            <span class="text-slate-300">|</span>
+            <span>9 min read</span>
+          </div>
+        </header>
+
+        <!-- Table of Contents -->
+        <nav class="bg-slate-50 border border-slate-200 rounded-xl p-5 md:p-6 mb-8 md:mb-12" aria-label="Table of contents">
+          <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-3">Contents</h2>
+          <div class="space-y-2 text-sm md:text-base">
+            <a href="#just-shipped" class="block text-slate-700 hover:text-teal-700 transition-colors">What Just Shipped: RFC 9728/8414 Discovery</a>
+            <a href="#aid-grant-block" class="block text-slate-700 hover:text-teal-700 transition-colors">The aid_grant Metadata Block</a>
+            <a href="#standards-table" class="block text-slate-700 hover:text-teal-700 transition-colors">The Standards AID Anchors To</a>
+            <a href="#whats-next" class="block text-slate-700 hover:text-teal-700 transition-colors">What's Next on the Backlog</a>
+            <a href="#interop" class="block text-slate-700 hover:text-teal-700 transition-colors">Interop with auth.md</a>
+            <a href="#how-to-help" class="block text-slate-700 hover:text-teal-700 transition-colors">How to Get Involved</a>
+          </div>
+        </nav>
+
+        <!-- Article Body -->
+        <div class="prose prose-slate max-w-none">
+
+          <h2 id="just-shipped" class="text-2xl md:text-3xl font-bold mt-12 mb-4">What Just Shipped: RFC 9728/8414 Discovery</h2>
+
+          <p class="text-slate-700 leading-relaxed mb-4">Until this week, getting an AID token meant knowing two things: the agent's keypair (handled at <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">aid-init</code> time) and the auth-server URL (handed to you by an operator). The second part was the bottleneck. Every tenant, every environment, every customer needed its own <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">--auth</code> flag. That's fine for ten agents and miserable for ten thousand.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-4">The fix is two well-known URLs and a metadata block. The agent calls a single <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">aid-discover --resource &lt;api-url&gt;</code> and gets back everything it needs. Three new CLI capabilities landed:</p>
+
+          <div class="code-block rounded-lg p-4 md:p-5 font-mono text-xs md:text-sm text-slate-300 mb-6 overflow-x-auto">
+<pre><span class="text-emerald-400"># New standalone discovery command</span>
+$ aid-discover --resource https://api.acme.com
+  Resource:                  https://api.acme.com
+  Auth server:               https://auth.acme.com/zoom
+  AID version:               1.0
+  Token endpoint:            https://auth.acme.com/zoom/oauth/token
+  Registration (request):    https://auth.acme.com/zoom/agent_registrations/request
+  Key algorithms:            Ed25519
+  Scopes:                    files:read, files:write, tickets:read
+
+<span class="text-emerald-400"># --resource works on aid-token and aid-request too</span>
+$ TOKEN=$(aid-token --resource https://api.acme.com --quiet)
+$ aid-request --resource https://api.acme.com</pre>
+          </div>
+
+          <p class="text-slate-700 leading-relaxed mb-6">Under the hood, <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">aid-discover</code> walks two standards. First <a href="https://datatracker.ietf.org/doc/rfc9728/" class="text-teal-700 hover:underline">RFC 9728 Protected Resource Metadata</a> at <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">/.well-known/oauth-protected-resource</code> on the API host. That gives the auth-server URL. Then <a href="https://datatracker.ietf.org/doc/rfc8414/" class="text-teal-700 hover:underline">RFC 8414 Authorization Server Metadata</a> at <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">/.well-known/oauth-authorization-server</code> on the auth host. That gives the token endpoint, the introspection endpoint, the supported scopes — and a new AID-specific block we're calling <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">aid_grant</code>.</p>
+
+          <h2 id="aid-grant-block" class="text-2xl md:text-3xl font-bold mt-12 mb-4">The aid_grant Metadata Block</h2>
+
+          <p class="text-slate-700 leading-relaxed mb-4">The auth server advertises <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">urn:aid:agent-identity</code> in <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">grant_types_supported</code> and adds an <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">aid_grant</code> object with the AID-specific endpoints:</p>
+
+          <div class="code-block rounded-lg p-4 md:p-5 font-mono text-xs md:text-sm text-slate-300 mb-6 overflow-x-auto">
+<pre>{
+  "issuer": "https://auth.acme.com/zoom",
+  "token_endpoint": "https://auth.acme.com/zoom/oauth/token",
+  "introspection_endpoint": "https://auth.acme.com/zoom/oauth/introspect",
+  "jwks_uri": "https://auth.acme.com/zoom/.well-known/jwks.json",
+  "grant_types_supported": [
+    "urn:aid:agent-identity",
+    "client_credentials"
+  ],
+  "scopes_supported": ["files:read", "files:write"],
+  "aid_grant": {
+    "aid_version": "1.0",
+    "registration_endpoint": "https://auth.acme.com/zoom/agent_registrations",
+    "registration_request_endpoint": "https://auth.acme.com/zoom/agent_registrations/request",
+    "code_resolution_endpoint": "https://auth.acme.com/zoom/agent_registrations/resolve",
+    "agent_authorization_uri": "https://app.acme.com/agents/authorize",
+    "key_algorithms_supported": ["Ed25519"],
+    "credential_types_supported": ["access_token"],
+    "polling_interval": 5
+  }
+}</pre>
+          </div>
+
+          <p class="text-slate-700 leading-relaxed mb-6">The shape is intentional. It sits side-by-side with WorkOS auth.md's <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">agent_auth</code> block on the same metadata document — a single auth server can support both protocols without conflict. We wrote more about that composition in <a href="/blog/auth-md-vs-aid-complementary-layers/" class="text-teal-700 hover:underline">the auth.md comparison post</a>.</p>
+
+          <h2 id="standards-table" class="text-2xl md:text-3xl font-bold mt-12 mb-4">The Standards AID Anchors To</h2>
+
+          <p class="text-slate-700 leading-relaxed mb-4">One of the legitimate critiques of AID in earlier reviews was thin standards lineage. We've fixed that. The spec now explicitly references seven RFCs, each playing a specific role:</p>
+
+          <div class="overflow-x-auto mb-8">
+            <table class="w-full text-sm md:text-base border-collapse">
+              <thead class="border-b-2 border-slate-300">
+                <tr>
+                  <th class="text-left py-3 pr-4 font-semibold">RFC</th>
+                  <th class="text-left py-3 px-4 font-semibold">Role in AID</th>
+                </tr>
+              </thead>
+              <tbody class="text-slate-700">
+                <tr class="border-b border-slate-200"><td class="py-3 pr-4 font-medium"><a href="https://datatracker.ietf.org/doc/rfc6749/" class="text-teal-700 hover:underline">RFC 6749</a></td><td class="py-3 px-4">OAuth 2.0 framework — AID defines a custom grant type within it</td></tr>
+                <tr class="border-b border-slate-200"><td class="py-3 pr-4 font-medium"><a href="https://datatracker.ietf.org/doc/rfc7515/" class="text-teal-700 hover:underline">RFC 7515 / 7519</a></td><td class="py-3 px-4">JWS / JWT — issued access tokens are RS256 JWTs</td></tr>
+                <tr class="border-b border-slate-200"><td class="py-3 pr-4 font-medium"><a href="https://datatracker.ietf.org/doc/rfc7662/" class="text-teal-700 hover:underline">RFC 7662</a></td><td class="py-3 px-4">Token Introspection — real-time validation, suspension and revocation</td></tr>
+                <tr class="border-b border-slate-200"><td class="py-3 pr-4 font-medium"><a href="https://datatracker.ietf.org/doc/rfc8414/" class="text-teal-700 hover:underline">RFC 8414</a></td><td class="py-3 px-4">Authorization Server Metadata — hosts the aid_grant block</td></tr>
+                <tr class="border-b border-slate-200"><td class="py-3 pr-4 font-medium"><a href="https://datatracker.ietf.org/doc/rfc8628/" class="text-teal-700 hover:underline">RFC 8628</a></td><td class="py-3 px-4">Device Authorization Grant — model for user_code, expires_in, interval, and polling error semantics</td></tr>
+                <tr class="border-b border-slate-200"><td class="py-3 pr-4 font-medium"><a href="https://datatracker.ietf.org/doc/rfc8693/" class="text-teal-700 hover:underline">RFC 8693</a></td><td class="py-3 px-4">Token Exchange — referenced for the upcoming delegation chains feature</td></tr>
+                <tr><td class="py-3 pr-4 font-medium"><a href="https://datatracker.ietf.org/doc/rfc9728/" class="text-teal-700 hover:underline">RFC 9728</a></td><td class="py-3 px-4">Protected Resource Metadata — resource-server discovery (shipped this week)</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="text-slate-700 leading-relaxed mb-6">This isn't just paperwork. Every one of these is a primitive an enterprise security team already understands. The remaining bespoke surface in AID — the <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">urn:aid:agent-identity</code> grant type, the Ed25519 signed Agent Identity document, the proof-of-possession format — is exactly the part that needs to be bespoke. Everything else is reused.</p>
+
+          <h2 id="whats-next" class="text-2xl md:text-3xl font-bold mt-12 mb-4">What's Next on the Backlog</h2>
+
+          <p class="text-slate-700 leading-relaxed mb-4">Seven feature items are tracked in <a href="https://github.com/agentmessaging/agent-identity/blob/main/BACKLOG.md" class="text-teal-700 hover:underline">BACKLOG.md</a>. Roughly ordered by when we want them:</p>
+
+          <div class="space-y-4 mb-8">
+            <div class="border border-slate-200 rounded-xl p-5">
+              <div class="flex items-center justify-between mb-2">
+                <div class="font-mono font-bold text-teal-700">F001 — IETF Internet-Draft submission</div>
+                <span class="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">High priority</span>
+              </div>
+              <p class="text-sm text-slate-600 leading-relaxed">The biggest legitimacy unlock. Publish AID as <code class="bg-slate-100 px-1 rounded">draft-pelaez-oauth-agent-identity-00</code> via the IETF OAuth working group. We have the writeup; what's left is conformance testing against a second independent implementation and an editor pass.</p>
+            </div>
+
+            <div class="border border-slate-200 rounded-xl p-5">
+              <div class="flex items-center justify-between mb-2">
+                <div class="font-mono font-bold text-teal-700">F002 — Refresh token support</div>
+                <span class="text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">High priority</span>
+              </div>
+              <p class="text-sm text-slate-600 leading-relaxed">Today AID issues only access tokens. Adding refresh tokens — with rotation, replay detection, and the option for the auth server to use them for re-checking agent status — closes a real ergonomics gap for long-running headless agents.</p>
+            </div>
+
+            <div class="border border-slate-200 rounded-xl p-5">
+              <div class="flex items-center justify-between mb-2">
+                <div class="font-mono font-bold text-teal-700">F003 — Agent identity discovery endpoint</div>
+                <span class="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">Medium</span>
+              </div>
+              <p class="text-sm text-slate-600 leading-relaxed">The discovery work we just shipped covers <em>server</em> discovery. F003 covers <em>agent</em> discovery — a way for a service to look up an agent's public key and metadata given just its address. Mirrors AMP's identity-discovery model.</p>
+            </div>
+
+            <div class="border border-slate-200 rounded-xl p-5">
+              <div class="flex items-center justify-between mb-2">
+                <div class="font-mono font-bold text-teal-700">F004 — Delegation chains for sub-agents</div>
+                <span class="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">Medium</span>
+              </div>
+              <p class="text-sm text-slate-600 leading-relaxed">Built on <a href="https://datatracker.ietf.org/doc/rfc8693/" class="text-teal-700 hover:underline">RFC 8693 Token Exchange</a>. A parent agent can mint a scoped, time-limited token for a sub-agent it spawned. The audit trail captures the chain. This is also where AID can natively carry a user-delegation context for composition with auth.md / ID-JAG.</p>
+            </div>
+
+            <div class="border border-slate-200 rounded-xl p-5">
+              <div class="flex items-center justify-between mb-2">
+                <div class="font-mono font-bold text-teal-700">F005 — Cross-org federation</div>
+                <span class="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">Medium</span>
+              </div>
+              <p class="text-sm text-slate-600 leading-relaxed">Trust models between AID auth servers so an agent registered with Acme's auth server can present a federated assertion at Beta's. Probably built on top of RFC 8693 plus an explicit trust-anchor configuration.</p>
+            </div>
+
+            <div class="border border-slate-200 rounded-xl p-5">
+              <div class="flex items-center justify-between mb-2">
+                <div class="font-mono font-bold text-teal-700">F006 — Transaction tokens</div>
+                <span class="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">Lower</span>
+              </div>
+              <p class="text-sm text-slate-600 leading-relaxed">Single-use tokens scoped to a specific transaction, for high-stakes operations (large refunds, deletions, irreversible actions). The agent signs a per-transaction proof; the token can only be redeemed once.</p>
+            </div>
+
+            <div class="border border-slate-200 rounded-xl p-5">
+              <div class="flex items-center justify-between mb-2">
+                <div class="font-mono font-bold text-teal-700">F007 — Opaque API key credential type</div>
+                <span class="text-xs bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">Lower</span>
+              </div>
+              <p class="text-sm text-slate-600 leading-relaxed">Currently AID issues only RS256 JWTs. F007 adds a <code class="bg-slate-100 px-1 rounded">requested_credential_type=api_key</code> mode for services that prefer opaque bearer tokens validated server-side via introspection. Matches auth.md's flexibility on this dimension.</p>
+            </div>
+          </div>
+
+          <h2 id="interop" class="text-2xl md:text-3xl font-bold mt-12 mb-4">Interop with auth.md</h2>
+
+          <p class="text-slate-700 leading-relaxed mb-4">When <a href="https://workos.com/blog/agent-registration-with-auth-md" class="text-teal-700 hover:underline">WorkOS announced auth.md</a> on May 21, we read the spec the same evening. Two surprises:</p>
+
+          <ol class="text-slate-700 mb-4 space-y-2 list-decimal list-inside">
+            <li>The discovery shape was almost identical to what we were planning. Same RFC 9728 anchor. Same well-known URLs. Just a different metadata block name (<code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">agent_auth</code> vs the <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">aid_grant</code> we shipped).</li>
+            <li>The protocols don't actually compete. auth.md handles fresh-agent bootstrap with user delegation; AID handles registered-agent token issuance with cryptographic per-agent identity. They're stackable layers.</li>
+          </ol>
+
+          <p class="text-slate-700 leading-relaxed mb-4">So we deliberately shaped <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">aid_grant</code> to coexist with <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">agent_auth</code>. An auth server publishes both. Agents pick whichever path fits their identity model. Next on this front: opening an issue on <a href="https://github.com/workos/auth.md" class="text-teal-700 hover:underline">workos/auth.md</a> proposing that <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">urn:aid:agent-identity</code> be listed as one of auth.md's <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">assertion_types_supported</code>. Strict composition. No protocol drama.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-6">If you're building a service that wants to support both consumer-AI delegation flows and per-agent identity flows, you can do that today. The metadata is shaped for it. The reference auth server at <a href="https://github.com/23blocks-org/auth-api" class="text-teal-700 hover:underline">23blocks-org/auth-api</a> will land the server-side <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">aid_grant</code> block in the next sprint.</p>
+
+          <h2 id="how-to-help" class="text-2xl md:text-3xl font-bold mt-12 mb-4">How to Get Involved</h2>
+
+          <p class="text-slate-700 leading-relaxed mb-4">AID is small enough to read in an afternoon, MIT-licensed, and actively under development. Five concrete ways to help:</p>
+
+          <ul class="text-slate-700 mb-6 space-y-3 list-disc list-inside">
+            <li><strong>Implement the server side.</strong> If you operate an OAuth 2.0 auth server, the AID grant adds ~500 lines of code. The discovery block adds ~50. The <a href="https://github.com/agentmessaging/agent-identity/blob/main/README.md#for-auth-server-implementers" class="text-teal-700 hover:underline">implementer checklist</a> is short.</li>
+            <li><strong>Try discovery against your existing setup.</strong> Run <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">aid-discover --resource &lt;your-api&gt;</code>. If it fails, tell us how. Real-world failure modes will sharpen the spec faster than reviewing a draft.</li>
+            <li><strong>Argue with us.</strong> The <a href="https://github.com/agentmessaging/agent-identity/issues" class="text-teal-700 hover:underline">issues tracker</a> is open. The position post on <a href="/blog/why-agents-need-cryptographic-identity/" class="text-teal-700 hover:underline">why agents need their own cryptographic identity</a> takes a contestable stance. Push back.</li>
+            <li><strong>Independent implementation.</strong> F001 (the IETF draft) is blocked on having a second independent implementation for interop testing. A TypeScript or Python client would close that loop.</li>
+            <li><strong>Reach us.</strong> <a href="https://x.com/agentmessaging" class="text-teal-700 hover:underline">@agentmessaging</a> on X, or open an issue. We answer.</li>
+          </ul>
+
+          <div class="bg-teal-50 border border-teal-200 rounded-xl p-6 mb-8">
+            <p class="text-teal-900 leading-relaxed mb-3"><strong>The summary.</strong> AID v1.1 ships discovery. The protocol now plugs into the same RFC 9728 / RFC 8414 discovery stack as WorkOS auth.md and any other modern OAuth tooling. The seven backlog items shape the rest of 2026, with F001 (IETF draft) and F002 (refresh tokens) as the next two big rocks.</p>
+            <p class="text-teal-900 leading-relaxed">The non-human identity market is moving fast. The right move isn't to win one protocol war — it's to ship the composable layer that should have existed all along.</p>
+          </div>
+
+          <!-- Related posts -->
+          <aside class="mt-12 pt-8 border-t border-slate-200" aria-label="Related posts">
+            <h2 class="text-lg font-semibold text-slate-800 mb-4">Related reading</h2>
+            <div class="grid md:grid-cols-2 gap-4">
+              <a href="/blog/auth-md-vs-aid-complementary-layers/" class="block bg-slate-50 hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-xl p-4 transition-colors">
+                <div class="text-xs text-teal-700 font-medium mb-1">Comparison</div>
+                <div class="font-semibold text-slate-800">auth.md and AID: Complementary Layers, Not Competitors</div>
+                <p class="text-sm text-slate-600 mt-1">A close read of WorkOS auth.md and how it composes with AID.</p>
+              </a>
+              <a href="/blog/why-agents-need-cryptographic-identity/" class="block bg-slate-50 hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-xl p-4 transition-colors">
+                <div class="text-xs text-teal-700 font-medium mb-1">Position</div>
+                <div class="font-semibold text-slate-800">Why Agents Need Their Own Cryptographic Identity</div>
+                <p class="text-sm text-slate-600 mt-1">The unoccupied position in the agent-auth landscape — and why it matters.</p>
+              </a>
+            </div>
+          </aside>
+
+        </div>
+      </div>
+    </article>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-slate-50 border-t border-slate-200 py-6 md:py-8">
+    <div class="max-w-6xl mx-auto px-4 md:px-6">
+      <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div class="flex items-center justify-center md:justify-start gap-2 text-slate-600">
+          <span class="font-mono font-bold text-teal-700">{AID}</span>
+          <span class="text-sm">Agent Identity Protocol</span>
+        </div>
+        <div class="flex flex-wrap items-center justify-center gap-4 md:gap-5 text-xs md:text-sm text-slate-500">
+          <a href="https://github.com/agentmessaging" class="hover:text-teal-700 transition-colors" title="GitHub" aria-label="GitHub">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          </a>
+          <a href="https://x.com/agentmessaging" class="hover:text-teal-700 transition-colors" title="X" aria-label="X (Twitter)">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <span class="text-slate-300">|</span>
+          <a href="https://github.com/agentmessaging/agent-identity/blob/main/LICENSE" class="hover:text-teal-700 transition-colors">MIT</a>
+          <span>By <a href="https://23blocks.com" class="text-slate-700 hover:text-teal-700 transition-colors">23blocks</a></span>
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

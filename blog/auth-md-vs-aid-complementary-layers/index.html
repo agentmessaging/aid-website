@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>auth.md and AID: Complementary Layers, Not Competitors</title>
+  <meta name="description" content="WorkOS auth.md and Agent Identity (AID) solve different problems in agent authentication. Here's how they compose — and where each one wins.">
+  <meta name="keywords" content="auth.md, AID, Agent Identity, WorkOS, ID-JAG, agent authentication, non-human identity, OAuth 2.0, Ed25519, agent registration, RFC 9728">
+  <meta name="author" content="Juan Peláez">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+  <link rel="canonical" href="https://agentids.org/blog/auth-md-vs-aid-complementary-layers/">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="auth.md and AID: Complementary Layers, Not Competitors">
+  <meta property="og:description" content="WorkOS auth.md and Agent Identity (AID) solve different problems in AI agent authentication. Here's how they compose — and where each one wins.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://agentids.org/blog/auth-md-vs-aid-complementary-layers/">
+  <meta property="og:site_name" content="Agent Identity (AID)">
+  <meta property="og:image" content="https://agentids.org/assets/images/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Agent Identity (AID) Protocol">
+  <meta property="og:locale" content="en_US">
+  <meta property="article:published_time" content="2026-05-24T00:00:00Z">
+  <meta property="article:modified_time" content="2026-05-24T00:00:00Z">
+  <meta property="article:author" content="Juan Peláez">
+  <meta property="article:section" content="Protocol Design">
+  <meta property="article:tag" content="auth.md">
+  <meta property="article:tag" content="AID">
+  <meta property="article:tag" content="WorkOS">
+  <meta property="article:tag" content="ID-JAG">
+  <meta property="article:tag" content="Agent Authentication">
+  <meta property="article:tag" content="Non-Human Identity">
+  <meta property="article:tag" content="OAuth 2.0">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@agentmessaging">
+  <meta name="twitter:creator" content="@jkpelaez">
+  <meta name="twitter:title" content="auth.md and AID: Complementary Layers, Not Competitors">
+  <meta name="twitter:description" content="WorkOS auth.md and AID solve different problems. Here's how they compose — and where each one wins.">
+  <meta name="twitter:image" content="https://agentids.org/assets/images/og-image.png">
+  <meta name="twitter:image:alt" content="Agent Identity (AID) Protocol">
+
+  <!-- JSON-LD: BlogPosting -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "auth.md and AID: Complementary Layers, Not Competitors",
+    "description": "WorkOS auth.md and Agent Identity (AID) solve different problems in AI agent authentication. Here's how they compose — and where each one wins.",
+    "datePublished": "2026-05-24T00:00:00Z",
+    "dateModified": "2026-05-24T00:00:00Z",
+    "author": {
+      "@type": "Person",
+      "name": "Juan Peláez",
+      "url": "https://x.com/jkpelaez"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Agent Identity (AID)",
+      "url": "https://agentids.org",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://agentids.org/assets/images/og-image.png"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://agentids.org/blog/auth-md-vs-aid-complementary-layers/"
+    },
+    "image": "https://agentids.org/assets/images/og-image.png",
+    "keywords": ["auth.md", "AID", "Agent Identity", "WorkOS", "ID-JAG", "non-human identity", "OAuth 2.0", "Ed25519", "RFC 9728", "agent registration"],
+    "articleSection": "Protocol Design",
+    "wordCount": 2950,
+    "inLanguage": "en-US",
+    "isPartOf": {
+      "@type": "Blog",
+      "name": "Agent Identity (AID) Blog",
+      "url": "https://agentids.org/blog/"
+    }
+  }
+  </script>
+
+  <!-- JSON-LD: BreadcrumbList -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://agentids.org/" },
+      { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://agentids.org/blog/" },
+      { "@type": "ListItem", "position": 3, "name": "auth.md and AID: Complementary Layers, Not Competitors", "item": "https://agentids.org/blog/auth-md-vs-aid-complementary-layers/" }
+    ]
+  }
+  </script>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/apple-touch-icon.png">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Space Grotesk', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4',
+              400: '#2dd4bf', 500: '#14b8a6', 600: '#0d9488', 700: '#0f766e',
+              800: '#115e59', 900: '#134e4a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .gradient-text {
+      background: linear-gradient(135deg, #0f766e 0%, #115e59 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .code-block { background: #1e293b; }
+    article h2 { scroll-margin-top: 5rem; }
+  </style>
+</head>
+<body class="bg-white text-slate-900 font-sans antialiased">
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:shadow-lg">Skip to content</a>
+
+  <!-- Navigation -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 md:px-6 py-3">
+      <div class="flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2 text-base md:text-xl font-mono font-bold text-teal-700">{AID}</a>
+        <div class="flex items-center gap-3 md:gap-6">
+          <a href="/#how-it-works" class="hidden md:block text-slate-900 hover:text-teal-700 transition-colors">How it Works</a>
+          <a href="/#features" class="hidden md:block text-slate-900 hover:text-teal-700 transition-colors">Features</a>
+          <a href="/#protocol" class="hidden md:block text-slate-900 hover:text-teal-700 transition-colors">Protocol</a>
+          <a href="/blog/" class="text-teal-700 font-medium transition-colors text-sm md:text-base">Blog</a>
+          <a href="https://github.com/agentmessaging/agent-identity" class="text-slate-900 hover:text-teal-700 transition-colors" aria-label="GitHub">
+            <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main-content">
+    <article class="pt-20 md:pt-24 pb-16 md:pb-24">
+      <div class="max-w-4xl mx-auto px-4 md:px-6">
+
+        <!-- Article Header -->
+        <header class="mb-8 md:mb-12">
+          <div class="mb-4">
+            <a href="/blog/" class="text-sm text-slate-500 hover:text-teal-700 transition-colors inline-flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+              Back to Blog
+            </a>
+          </div>
+          <div class="flex flex-wrap gap-2 mb-4">
+            <span class="bg-teal-50 text-teal-700 text-xs font-medium px-2.5 py-0.5 rounded-full">Comparison</span>
+            <span class="bg-teal-50 text-teal-700 text-xs font-medium px-2.5 py-0.5 rounded-full">Protocol Design</span>
+            <span class="bg-teal-50 text-teal-700 text-xs font-medium px-2.5 py-0.5 rounded-full">Standards</span>
+          </div>
+          <h1 class="text-3xl md:text-5xl font-bold leading-tight mb-4 md:mb-6">
+            auth.md and AID: Complementary Layers, Not Competitors
+          </h1>
+          <p class="text-base md:text-xl text-slate-600 mb-4 md:mb-6 leading-relaxed">
+            WorkOS launched <a href="https://workos.com/blog/agent-registration-with-auth-md" class="text-teal-700 hover:underline">auth.md</a> two days ago — an open protocol for agents to register themselves with services. It's a thoughtful design, anchored in real IETF standards. It also makes one architectural choice that's directly opposite to AID: the agent never has its own cryptographic identity. After spending a day with the spec and the reference implementation, my read is that auth.md and AID aren't really competitors. They answer different questions at different layers, and the cleanest future is one where they compose.
+          </p>
+          <div class="flex items-center gap-3 text-sm text-slate-500 border-b border-slate-200 pb-6">
+            <div class="flex items-center gap-2">
+              <span class="font-medium text-slate-700">Juan Peláez</span>
+              <a href="https://x.com/jkpelaez" class="text-slate-400 hover:text-teal-700 transition-colors" title="@jkpelaez on X" aria-label="Author on X">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              </a>
+            </div>
+            <span class="text-slate-300">|</span>
+            <time datetime="2026-05-24">May 24, 2026</time>
+            <span class="text-slate-300">|</span>
+            <span>11 min read</span>
+          </div>
+        </header>
+
+        <!-- Table of Contents -->
+        <nav class="bg-slate-50 border border-slate-200 rounded-xl p-5 md:p-6 mb-8 md:mb-12" aria-label="Table of contents">
+          <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-3">Contents</h2>
+          <div class="space-y-2 text-sm md:text-base">
+            <a href="#what-each-is" class="block text-slate-700 hover:text-teal-700 transition-colors">What Each Protocol Actually Is</a>
+            <a href="#architectural-split" class="block text-slate-700 hover:text-teal-700 transition-colors">The Fundamental Architectural Split</a>
+            <a href="#comparison-table" class="block text-slate-700 hover:text-teal-700 transition-colors">Side-by-Side Comparison</a>
+            <a href="#authmd-wins" class="block text-slate-700 hover:text-teal-700 transition-colors">Where auth.md Wins</a>
+            <a href="#aid-wins" class="block text-slate-700 hover:text-teal-700 transition-colors">Where AID Wins</a>
+            <a href="#convergence" class="block text-slate-700 hover:text-teal-700 transition-colors">The Convergence Opportunity</a>
+            <a href="#adoption" class="block text-slate-700 hover:text-teal-700 transition-colors">Adoption Snapshot</a>
+            <a href="#bottom-line" class="block text-slate-700 hover:text-teal-700 transition-colors">The Bottom Line</a>
+          </div>
+        </nav>
+
+        <!-- Article Body -->
+        <div class="prose prose-slate max-w-none">
+
+          <h2 id="what-each-is" class="text-2xl md:text-3xl font-bold mt-12 mb-4">What Each Protocol Actually Is</h2>
+
+          <p class="text-slate-700 leading-relaxed mb-4"><strong>auth.md</strong> is an open protocol from WorkOS that lets a service publish a markdown file at <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">https://yourservice.com/auth.md</code> describing how agents can register. Agents fetch the file, follow the recipe, and either present a signed identity assertion (an ID-JAG from a trusted agent provider) or go through an email-OTP claim ceremony. The wire format is JSON over <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">/agent/auth</code>, with discovery via <a href="https://datatracker.ietf.org/doc/rfc9728/" class="text-teal-700 hover:underline">RFC 9728 Protected Resource Metadata</a>. The reference implementation is TypeScript. The spec was published on May 21, 2026.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-6"><strong>AID</strong> (Agent Identity) is what we've been building at <a href="https://23blocks.com" class="text-teal-700 hover:underline">23blocks</a>. Each agent has its own Ed25519 keypair. Registration is a one-time human-approved binding between that keypair and a role on an auth server. From then on, every token request is a signed proof of possession over a custom OAuth 2.0 grant type, <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">urn:aid:agent-identity</code>. Reference implementation is bash + curl + jq + openssl. Already in production.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-6">Both protocols use Ed25519 and OAuth 2.0 at the core. Both require human authorization before agents can operate. Both are MIT-licensed. After that, the philosophies diverge sharply.</p>
+
+          <h2 id="architectural-split" class="text-2xl md:text-3xl font-bold mt-12 mb-4">The Fundamental Architectural Split</h2>
+
+          <p class="text-slate-700 leading-relaxed mb-4">Read auth.md's <a href="https://workos.com/auth-md/docs/agent-providers" class="text-teal-700 hover:underline">agent-provider guide</a> closely and you'll find a striking sentence: <em>"The document does not establish cryptographic identity for the agent itself."</em> The agent provider has keys. The agent — the thing actually making requests — does not. It operates inside a user's session and presents a signed assertion that says "this user, on this provider, consented to this audience." The provider holds the private key.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-4">AID flips this. The agent <em>is</em> the identity. It has its own Ed25519 keypair, its own address (<code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">support-bot@acme.local</code>), its own role, its own scopes. There's no "provider" intermediary — the agent's signature is sufficient because the auth server has, at registration time, recorded the agent's public key as a first-class principal.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-6">This isn't a small detail. It changes what's auditable, what's blast-radius-contained, what's revocable, and what fits which deployment shape. Two examples to make it concrete:</p>
+
+          <div class="grid md:grid-cols-2 gap-4 mb-8">
+            <div class="bg-teal-50 border border-teal-200 rounded-xl p-5">
+              <div class="font-mono font-bold text-teal-700 mb-2">Audit trail with AID</div>
+              <p class="text-sm text-teal-900 leading-relaxed">Logs show <code class="bg-teal-100 px-1 rounded">agent_address=support-bot@acme.local</code>. If two agents act under one user's authority, you can tell them apart. Per-agent rate limits become trivial.</p>
+            </div>
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-5">
+              <div class="font-mono font-bold text-slate-700 mb-2">Audit trail with auth.md</div>
+              <p class="text-sm text-slate-600 leading-relaxed">Logs show <code class="bg-slate-100 px-1 rounded">iss=provider-X, sub=user-Y</code>. Two agents acting for the same user on the same provider are indistinguishable. Per-agent attribution requires a separate channel.</p>
+            </div>
+          </div>
+
+          <h2 id="comparison-table" class="text-2xl md:text-3xl font-bold mt-12 mb-4">Side-by-Side Comparison</h2>
+
+          <div class="overflow-x-auto mb-8">
+            <table class="w-full text-sm md:text-base border-collapse">
+              <thead class="border-b-2 border-slate-300">
+                <tr>
+                  <th class="text-left py-3 pr-4 font-semibold">Dimension</th>
+                  <th class="text-left py-3 px-4 font-semibold">auth.md</th>
+                  <th class="text-left py-3 pl-4 font-semibold">AID</th>
+                </tr>
+              </thead>
+              <tbody class="text-slate-700">
+                <tr class="border-b border-slate-200"><td class="py-3 pr-4 font-medium">Who holds the private key</td><td class="py-3 px-4">Agent provider</td><td class="py-3 pl-4">The agent itself</td></tr>
+                <tr class="border-b border-slate-200"><td class="py-3 pr-4 font-medium">Primary principal</td><td class="py-3 px-4">End user (agent acts "on behalf of")</td><td class="py-3 pl-4">The agent (first-class)</td></tr>
+                <tr class="border-b border-slate-200"><td class="py-3 pr-4 font-medium">Trust anchor</td><td class="py-3 px-4">Service-maintained allowlist of provider JWKSs</td><td class="py-3 pl-4">Per-service per-agent registration</td></tr>
+                <tr class="border-b border-slate-200"><td class="py-3 pr-4 font-medium">Discovery</td><td class="py-3 px-4">RFC 9728 PRM + <code class="bg-slate-100 px-1 rounded text-xs">/auth.md</code></td><td class="py-3 pl-4">RFC 9728 + <code class="bg-slate-100 px-1 rounded text-xs">aid_grant</code> block (just shipped)</td></tr>
+                <tr class="border-b border-slate-200"><td class="py-3 pr-4 font-medium">Onboarding flows</td><td class="py-3 px-4">Three (ID-JAG, verified email, anonymous + OTP)</td><td class="py-3 pl-4">Two (admin-initiated, agent-requests-pending)</td></tr>
+                <tr class="border-b border-slate-200"><td class="py-3 pr-4 font-medium">Wire format</td><td class="py-3 px-4">JSON body POST to <code class="bg-slate-100 px-1 rounded text-xs">/agent/auth</code></td><td class="py-3 pl-4">OAuth 2.0 grant <code class="bg-slate-100 px-1 rounded text-xs">urn:aid:agent-identity</code></td></tr>
+                <tr class="border-b border-slate-200"><td class="py-3 pr-4 font-medium">Revocation</td><td class="py-3 px-4">Push: provider→service backchannel</td><td class="py-3 pl-4">Pull: RFC 7662 introspection</td></tr>
+                <tr class="border-b border-slate-200"><td class="py-3 pr-4 font-medium">Credential formats</td><td class="py-3 px-4">JWT or opaque API key</td><td class="py-3 pl-4">RS256 JWT (opaque on roadmap)</td></tr>
+                <tr class="border-b border-slate-200"><td class="py-3 pr-4 font-medium">PII in the protocol</td><td class="py-3 px-4">Yes (email, phone)</td><td class="py-3 pl-4">No (agent address + fingerprint only)</td></tr>
+                <tr class="border-b border-slate-200"><td class="py-3 pr-4 font-medium">Reference impl</td><td class="py-3 px-4">TypeScript / Node</td><td class="py-3 pl-4">Bash + jq + curl + openssl</td></tr>
+                <tr class="border-b border-slate-200"><td class="py-3 pr-4 font-medium">Status</td><td class="py-3 px-4">Public release (2026-05-21)</td><td class="py-3 pl-4">v1.0, in production</td></tr>
+                <tr><td class="py-3 pr-4 font-medium">License</td><td class="py-3 px-4">MIT</td><td class="py-3 pl-4">MIT</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h2 id="authmd-wins" class="text-2xl md:text-3xl font-bold mt-12 mb-4">Where auth.md Wins</h2>
+
+          <p class="text-slate-700 leading-relaxed mb-4"><strong>Standards lineage.</strong> auth.md anchors itself in <a href="https://datatracker.ietf.org/doc/rfc9728/" class="text-teal-700 hover:underline">RFC 9728</a>, the <a href="https://datatracker.ietf.org/doc/draft-ietf-oauth-identity-assertion-authz-grant/" class="text-teal-700 hover:underline">ID-JAG IETF draft</a>, and OIDC backchannel logout. That's a one-Slack-message sell to enterprise security teams. Until last week, AID's standards story was thinner. We've since added an RFC anchoring table to the spec and discovery is now RFC 9728/8414-shaped, but auth.md has more standards-shaped depth out of the gate.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-4"><strong>Friction laddering.</strong> auth.md's anonymous-start flow is genuinely clever. An agent that has no identity assertion can still register, get a low-scope API key immediately, and earn more scopes later through an email OTP claim. AID is binary — approved or not. The auth.md design lowers activation friction for consumer-AI shapes.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-4"><strong>Scale via the provider model.</strong> One agent provider (Anthropic, OpenAI, Google) can vouch for millions of agents. AID would need every service to register every agent individually. For the "Claude-acting-for-Jane" scenario where Claude has never seen Acme Corp's API before, the provider model scales beautifully.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-4"><strong>Consumer-AI fit.</strong> The user is the principal; the agent is ephemeral; identity assertions carry user context. This matches how ChatGPT-style assistants actually deploy today.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-6"><strong>Distribution and authorship.</strong> WorkOS-backed launch. <a href="https://workos.com/blog/agent-registration-with-auth-md" class="text-teal-700 hover:underline">Garrett Galow</a> shepherding the spec. ID-JAG co-authored by <a href="https://www.ietf.org/archive/id/draft-parecki-oauth-identity-assertion-authz-grant-03.html" class="text-teal-700 hover:underline">Aaron Parecki and Karl McGuinness</a> — the same people who wrote PKCE and FAPI. That's a credibility tailwind.</p>
+
+          <h2 id="aid-wins" class="text-2xl md:text-3xl font-bold mt-12 mb-4">Where AID Wins</h2>
+
+          <p class="text-slate-700 leading-relaxed mb-4"><strong>Per-agent auditability.</strong> Logs show <em>which agent</em> did <em>which thing</em>. With auth.md you log <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">(provider X, user Y)</code> — you cannot distinguish two agents acting for the same user under the same provider. For SOC 2 audit trails, fraud investigation, and per-agent rate limiting, this matters.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-4"><strong>Per-agent least privilege.</strong> AID roles are bound to the agent, not the user. A user with admin rights can run a read-only agent. With auth.md, scope decisions are mediated by the provider and the service's PRM — the agent has no independent scope envelope.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-4"><strong>Proof-of-possession by the agent.</strong> AID's <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">aid-token-exchange\n&lt;ts&gt;\n&lt;oidc_issuer&gt;</code> signed proof binds each token request to the holder of the key. auth.md doesn't prove the agent holds anything — it proves the provider did.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-4"><strong>Provider-compromise blast radius.</strong> In auth.md, compromise of one provider's signing key compromises <em>every delegation it ever issued</em>, until services rotate their trusted-provider lists. WorkOS's own docs flag this as "security-critical configuration." AID has no providers — compromise of one agent's key compromises one agent.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-4"><strong>Real-time revocation without provider cooperation.</strong> RFC 7662 introspection works whether or not anyone pushes events. auth.md's revocation depends on the provider's willingness and ability to push. Push-based revocation also has its own subtle reliability story (retries, ordering, idempotency by <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">jti</code>) — pull-based is simpler.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-4"><strong>Headless deployments.</strong> AID is <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">bash + curl + jq + openssl</code>. No runtime. No SDK. Works inside a Dockerfile RUN line. Drop it into a CI job, a cron, a sidecar.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-6"><strong>No PII in the protocol.</strong> Important for compliance and for B2B/server-to-server cases. Agents don't have emails or phones. They have addresses and fingerprints.</p>
+
+          <h2 id="convergence" class="text-2xl md:text-3xl font-bold mt-12 mb-4">The Convergence Opportunity</h2>
+
+          <p class="text-slate-700 leading-relaxed mb-4">Here's the clearest framing: <strong>auth.md and AID solve different layers of the same problem.</strong></p>
+
+          <ul class="text-slate-700 mb-4 space-y-2 list-disc list-inside">
+            <li>auth.md answers: <em>"How does a fresh agent discover a service and bootstrap a registration?"</em></li>
+            <li>AID answers: <em>"How does a registered agent prove it's the holder of a specific identity on every subsequent request?"</em></li>
+          </ul>
+
+          <p class="text-slate-700 leading-relaxed mb-4">These are stackable. An auth.md <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">agent_auth</code> block could advertise <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">urn:aid:agent-identity</code> as one of its <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">assertion_types_supported</code>. The agent's Ed25519 public key becomes the registration artifact. AID's token-exchange grant takes over for ongoing token issuance. You get auth.md's discoverable bootstrap and AID's per-agent identity in the same flow.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-4">This week we shipped the prerequisite on AID's side. The new <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">aid_grant</code> block lives at <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">/.well-known/oauth-authorization-server</code> and is intentionally shaped to sit side-by-side with auth.md's <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">agent_auth</code> block on the same metadata document:</p>
+
+          <div class="code-block rounded-lg p-4 md:p-5 font-mono text-xs md:text-sm text-slate-300 mb-6 overflow-x-auto">
+<pre>{
+  "issuer": "https://auth.acme.com/zoom",
+  "token_endpoint": "https://auth.acme.com/zoom/oauth/token",
+  "grant_types_supported": [
+    "urn:aid:agent-identity",
+    "client_credentials"
+  ],
+  "aid_grant": {
+    "aid_version": "1.0",
+    "registration_endpoint": "...",
+    "registration_request_endpoint": "...",
+    "key_algorithms_supported": ["Ed25519"]
+  },
+  "agent_auth": {
+    "register_uri": "...",
+    "identity_types_supported": ["anonymous", "identity_assertion"]
+  }
+}</pre>
+          </div>
+
+          <p class="text-slate-700 leading-relaxed mb-6">A single auth server can support both protocols. An agent that knows it has an Ed25519 identity uses the AID path. An agent that only has a user-delegation context uses the auth.md path. Nothing forces a choice. We're going to open an issue on <a href="https://github.com/workos/auth.md" class="text-teal-700 hover:underline">workos/auth.md</a> proposing this composition — Garrett's blog explicitly invites community feedback (<code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">authmd@workos.com</code>) and the architectural surface is small.</p>
+
+          <h2 id="adoption" class="text-2xl md:text-3xl font-bold mt-12 mb-4">Adoption Snapshot</h2>
+
+          <p class="text-slate-700 leading-relaxed mb-4">Where each protocol sits in the broader landscape today:</p>
+
+          <ul class="text-slate-700 mb-6 space-y-2 list-disc list-inside">
+            <li><strong>auth.md:</strong> Days old, ~40 stars on GitHub, WorkOS distribution, ID-JAG IETF momentum. Likely to grow fast in consumer-AI.</li>
+            <li><strong>ID-JAG:</strong> IETF OAuth WG <a href="https://datatracker.ietf.org/doc/draft-ietf-oauth-identity-assertion-authz-grant/" class="text-teal-700 hover:underline">draft-03</a>. Strong signal.</li>
+            <li><strong>DCR (RFC 7591) + MCP:</strong> The <a href="https://blog.modelcontextprotocol.io/posts/client_registration/" class="text-teal-700 hover:underline">MCP team has pivoted to DCR</a> after running into the limits of manual registration. There's real market pull for <em>something</em> here.</li>
+            <li><strong>Other proposals</strong> (AAuth, Agent Auth, x402): all early-stage. See <a href="https://apichangelog.substack.com/p/four-agentic-authorization-alternatives" class="text-teal-700 hover:underline">API Changelog's roundup</a>.</li>
+            <li><strong>AID:</strong> niche but architecturally distinct. The "agent has its own identity" position is <em>unoccupied</em> in the public landscape. Every other proposal models the agent as either a client (DCR), a session (auth.md/ID-JAG), or a wallet (x402).</li>
+          </ul>
+
+          <p class="text-slate-700 leading-relaxed mb-6">The market is clearly looking for an answer. The question is whether the answer is one protocol or a layered stack. We think it's the stack.</p>
+
+          <h2 id="bottom-line" class="text-2xl md:text-3xl font-bold mt-12 mb-4">The Bottom Line</h2>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-6 mb-8">
+            <p class="text-slate-700 leading-relaxed mb-3">auth.md is the better answer for <strong>consumer AI</strong>: ChatGPT acts for Jane, hits a service that's never seen Jane before, both sides discover each other through standard well-known URLs, and the agent provider's JWKS provides the trust anchor. The user is the principal; the agent is the proxy.</p>
+            <p class="text-slate-700 leading-relaxed mb-3">AID is the better answer for <strong>autonomous, long-lived, audited agents</strong>: support-bot has its own keys, its own role, its own scopes, its own audit trail. It runs in a server. It doesn't act for a particular user — it acts for itself, with permissions an admin granted explicitly. The agent is the principal.</p>
+            <p class="text-slate-700 leading-relaxed">The interesting near-future is composing them. An auth server publishes both <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">aid_grant</code> and <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">agent_auth</code> blocks. A multi-modal agent — say, Claude with a registered Ed25519 identity and a user-delegation context — uses whichever path fits the request. That's a future worth building toward.</p>
+          </div>
+
+          <div class="border-t border-slate-200 pt-6 mt-8">
+            <p class="text-sm text-slate-500">
+              <strong>Disclosure:</strong> This article is written by the AID team. We've tried to be fair about both protocols and link to the primary sources throughout. auth.md is open source at <a href="https://github.com/workos/auth.md" class="text-teal-700 hover:underline">github.com/workos/auth.md</a>. AID is open source at <a href="https://github.com/agentmessaging/agent-identity" class="text-teal-700 hover:underline">github.com/agentmessaging/agent-identity</a>.
+            </p>
+          </div>
+
+          <!-- Related posts -->
+          <aside class="mt-12 pt-8 border-t border-slate-200" aria-label="Related posts">
+            <h2 class="text-lg font-semibold text-slate-800 mb-4">Related reading</h2>
+            <div class="grid md:grid-cols-2 gap-4">
+              <a href="/blog/why-agents-need-cryptographic-identity/" class="block bg-slate-50 hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-xl p-4 transition-colors">
+                <div class="text-xs text-teal-700 font-medium mb-1">Position</div>
+                <div class="font-semibold text-slate-800">Why Agents Need Their Own Cryptographic Identity</div>
+                <p class="text-sm text-slate-600 mt-1">The unoccupied position in the agent-auth landscape — and why it matters.</p>
+              </a>
+              <a href="/blog/aid-2026-roadmap/" class="block bg-slate-50 hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-xl p-4 transition-colors">
+                <div class="text-xs text-teal-700 font-medium mb-1">Roadmap</div>
+                <div class="font-semibold text-slate-800">AID 2026 Roadmap: Discovery, RFCs, and the IETF</div>
+                <p class="text-sm text-slate-600 mt-1">What we just shipped, what's next, and how to get involved.</p>
+              </a>
+            </div>
+          </aside>
+
+        </div>
+      </div>
+    </article>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-slate-50 border-t border-slate-200 py-6 md:py-8">
+    <div class="max-w-6xl mx-auto px-4 md:px-6">
+      <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div class="flex items-center justify-center md:justify-start gap-2 text-slate-600">
+          <span class="font-mono font-bold text-teal-700">{AID}</span>
+          <span class="text-sm">Agent Identity Protocol</span>
+        </div>
+        <div class="flex flex-wrap items-center justify-center gap-4 md:gap-5 text-xs md:text-sm text-slate-500">
+          <a href="https://github.com/agentmessaging" class="hover:text-teal-700 transition-colors" title="GitHub" aria-label="GitHub">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          </a>
+          <a href="https://x.com/agentmessaging" class="hover:text-teal-700 transition-colors" title="X" aria-label="X (Twitter)">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <span class="text-slate-300">|</span>
+          <a href="https://github.com/agentmessaging/agent-identity/blob/main/LICENSE" class="hover:text-teal-700 transition-colors">MIT</a>
+          <span>By <a href="https://23blocks.com" class="text-slate-700 hover:text-teal-700 transition-colors">23blocks</a></span>
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

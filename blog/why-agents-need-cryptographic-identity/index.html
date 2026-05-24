@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Why Agents Need Their Own Cryptographic Identity</title>
+  <meta name="description" content="Most agent-auth proposals model the agent as a session, a client, or a wallet. None give it its own identity. Here's what that costs you — and when it matters.">
+  <meta name="keywords" content="agent identity, cryptographic identity, non-human identity, NHI, AI agent authentication, Ed25519, delegation, auth.md, ID-JAG, OAuth 2.0, audit trail">
+  <meta name="author" content="Juan Peláez">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+  <link rel="canonical" href="https://agentids.org/blog/why-agents-need-cryptographic-identity/">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Why Agents Need Their Own Cryptographic Identity">
+  <meta property="og:description" content="Most agent-auth proposals model the agent as a session, a client, or a wallet. None give it its own identity. Here's what that costs you — and when it matters.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://agentids.org/blog/why-agents-need-cryptographic-identity/">
+  <meta property="og:site_name" content="Agent Identity (AID)">
+  <meta property="og:image" content="https://agentids.org/assets/images/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Agent Identity (AID) Protocol">
+  <meta property="og:locale" content="en_US">
+  <meta property="article:published_time" content="2026-05-24T00:00:00Z">
+  <meta property="article:modified_time" content="2026-05-24T00:00:00Z">
+  <meta property="article:author" content="Juan Peláez">
+  <meta property="article:section" content="Position">
+  <meta property="article:tag" content="Agent Identity">
+  <meta property="article:tag" content="Non-Human Identity">
+  <meta property="article:tag" content="Cryptographic Identity">
+  <meta property="article:tag" content="Delegation">
+  <meta property="article:tag" content="OAuth 2.0">
+  <meta property="article:tag" content="Audit Trail">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@agentmessaging">
+  <meta name="twitter:creator" content="@jkpelaez">
+  <meta name="twitter:title" content="Why Agents Need Their Own Cryptographic Identity">
+  <meta name="twitter:description" content="Most agent-auth proposals model the agent as a session, a client, or a wallet. Here's what that costs you.">
+  <meta name="twitter:image" content="https://agentids.org/assets/images/og-image.png">
+  <meta name="twitter:image:alt" content="Agent Identity (AID) Protocol">
+
+  <!-- JSON-LD: BlogPosting -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Why Agents Need Their Own Cryptographic Identity",
+    "description": "Most agent-auth proposals model the agent as a session, a client, or a wallet. None give it its own identity. Here's what that costs you — and when it matters.",
+    "datePublished": "2026-05-24T00:00:00Z",
+    "dateModified": "2026-05-24T00:00:00Z",
+    "author": {
+      "@type": "Person",
+      "name": "Juan Peláez",
+      "url": "https://x.com/jkpelaez"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Agent Identity (AID)",
+      "url": "https://agentids.org",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://agentids.org/assets/images/og-image.png"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://agentids.org/blog/why-agents-need-cryptographic-identity/"
+    },
+    "image": "https://agentids.org/assets/images/og-image.png",
+    "keywords": ["agent identity", "cryptographic identity", "non-human identity", "AI agent authentication", "Ed25519", "delegation", "audit trail", "blast radius"],
+    "articleSection": "Position",
+    "wordCount": 2700,
+    "inLanguage": "en-US",
+    "isPartOf": {
+      "@type": "Blog",
+      "name": "Agent Identity (AID) Blog",
+      "url": "https://agentids.org/blog/"
+    }
+  }
+  </script>
+
+  <!-- JSON-LD: BreadcrumbList -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://agentids.org/" },
+      { "@type": "ListItem", "position": 2, "name": "Blog", "item": "https://agentids.org/blog/" },
+      { "@type": "ListItem", "position": 3, "name": "Why Agents Need Their Own Cryptographic Identity", "item": "https://agentids.org/blog/why-agents-need-cryptographic-identity/" }
+    ]
+  }
+  </script>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/apple-touch-icon.png">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Space Grotesk', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4',
+              400: '#2dd4bf', 500: '#14b8a6', 600: '#0d9488', 700: '#0f766e',
+              800: '#115e59', 900: '#134e4a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .gradient-text {
+      background: linear-gradient(135deg, #0f766e 0%, #115e59 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .code-block { background: #1e293b; }
+    article h2 { scroll-margin-top: 5rem; }
+  </style>
+</head>
+<body class="bg-white text-slate-900 font-sans antialiased">
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:shadow-lg">Skip to content</a>
+
+  <!-- Navigation -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 md:px-6 py-3">
+      <div class="flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2 text-base md:text-xl font-mono font-bold text-teal-700">{AID}</a>
+        <div class="flex items-center gap-3 md:gap-6">
+          <a href="/#how-it-works" class="hidden md:block text-slate-900 hover:text-teal-700 transition-colors">How it Works</a>
+          <a href="/#features" class="hidden md:block text-slate-900 hover:text-teal-700 transition-colors">Features</a>
+          <a href="/#protocol" class="hidden md:block text-slate-900 hover:text-teal-700 transition-colors">Protocol</a>
+          <a href="/blog/" class="text-teal-700 font-medium transition-colors text-sm md:text-base">Blog</a>
+          <a href="https://github.com/agentmessaging/agent-identity" class="text-slate-900 hover:text-teal-700 transition-colors" aria-label="GitHub">
+            <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main-content">
+    <article class="pt-20 md:pt-24 pb-16 md:pb-24">
+      <div class="max-w-4xl mx-auto px-4 md:px-6">
+
+        <!-- Article Header -->
+        <header class="mb-8 md:mb-12">
+          <div class="mb-4">
+            <a href="/blog/" class="text-sm text-slate-500 hover:text-teal-700 transition-colors inline-flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+              Back to Blog
+            </a>
+          </div>
+          <div class="flex flex-wrap gap-2 mb-4">
+            <span class="bg-teal-50 text-teal-700 text-xs font-medium px-2.5 py-0.5 rounded-full">Position</span>
+            <span class="bg-teal-50 text-teal-700 text-xs font-medium px-2.5 py-0.5 rounded-full">Non-Human Identity</span>
+            <span class="bg-teal-50 text-teal-700 text-xs font-medium px-2.5 py-0.5 rounded-full">Protocol Design</span>
+          </div>
+          <h1 class="text-3xl md:text-5xl font-bold leading-tight mb-4 md:mb-6">
+            Why Agents Need Their Own Cryptographic Identity
+          </h1>
+          <p class="text-base md:text-xl text-slate-600 mb-4 md:mb-6 leading-relaxed">
+            Survey the agent-authentication proposals out today — WorkOS auth.md, ID-JAG, AAuth, x402, OAuth Dynamic Client Registration — and you'll notice something. Every single one models the agent as <em>something else</em>: a session, a client, a wallet, a delegated user. None of them give the agent an identity of its own. That gap costs you auditability, blast-radius containment, and a coherent answer to "who did this?" Here's why it matters, and when it's worth the extra weight.
+          </p>
+          <div class="flex items-center gap-3 text-sm text-slate-500 border-b border-slate-200 pb-6">
+            <div class="flex items-center gap-2">
+              <span class="font-medium text-slate-700">Juan Peláez</span>
+              <a href="https://x.com/jkpelaez" class="text-slate-400 hover:text-teal-700 transition-colors" title="@jkpelaez on X" aria-label="Author on X">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              </a>
+            </div>
+            <span class="text-slate-300">|</span>
+            <time datetime="2026-05-24">May 24, 2026</time>
+            <span class="text-slate-300">|</span>
+            <span>10 min read</span>
+          </div>
+        </header>
+
+        <!-- Table of Contents -->
+        <nav class="bg-slate-50 border border-slate-200 rounded-xl p-5 md:p-6 mb-8 md:mb-12" aria-label="Table of contents">
+          <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-3">Contents</h2>
+          <div class="space-y-2 text-sm md:text-base">
+            <a href="#four-models" class="block text-slate-700 hover:text-teal-700 transition-colors">The Four Ways Agents Get Authenticated Today</a>
+            <a href="#what-you-lose" class="block text-slate-700 hover:text-teal-700 transition-colors">What You Lose When the Agent Has No Identity</a>
+            <a href="#concrete-scenario" class="block text-slate-700 hover:text-teal-700 transition-colors">A Concrete Scenario: The Refund Audit</a>
+            <a href="#what-identity-means" class="block text-slate-700 hover:text-teal-700 transition-colors">What "Agent Has Its Own Identity" Means in Practice</a>
+            <a href="#when-delegation" class="block text-slate-700 hover:text-teal-700 transition-colors">When Delegation IS the Right Model</a>
+            <a href="#compose-them" class="block text-slate-700 hover:text-teal-700 transition-colors">Why Not Both</a>
+            <a href="#closing" class="block text-slate-700 hover:text-teal-700 transition-colors">Closing</a>
+          </div>
+        </nav>
+
+        <!-- Article Body -->
+        <div class="prose prose-slate max-w-none">
+
+          <h2 id="four-models" class="text-2xl md:text-3xl font-bold mt-12 mb-4">The Four Ways Agents Get Authenticated Today</h2>
+
+          <p class="text-slate-700 leading-relaxed mb-4">Look at every public agent-authentication proposal and you can sort them into four buckets. Each one models the agent as a different abstraction borrowed from a pre-agent era.</p>
+
+          <div class="grid md:grid-cols-2 gap-4 mb-8">
+            <div class="border border-slate-200 rounded-xl p-5">
+              <div class="font-semibold mb-2">1. The Agent as Client</div>
+              <p class="text-sm text-slate-600 leading-relaxed">OAuth 2.0 <a href="https://datatracker.ietf.org/doc/rfc7591/" class="text-teal-700 hover:underline">Dynamic Client Registration (RFC 7591)</a>. The agent registers itself as an OAuth client — same shape as a mobile app or third-party integration. Trust anchor: the client_id + secret pair the auth server issues. <a href="https://blog.modelcontextprotocol.io/posts/client_registration/" class="text-teal-700 hover:underline">MCP recently adopted this</a>.</p>
+            </div>
+            <div class="border border-slate-200 rounded-xl p-5">
+              <div class="font-semibold mb-2">2. The Agent as Session</div>
+              <p class="text-sm text-slate-600 leading-relaxed"><a href="https://github.com/workos/auth.md" class="text-teal-700 hover:underline">WorkOS auth.md</a>, <a href="https://datatracker.ietf.org/doc/draft-ietf-oauth-identity-assertion-authz-grant/" class="text-teal-700 hover:underline">ID-JAG</a>. The agent operates inside a user's authenticated session. An agent provider mints a short-lived assertion on user consent. Trust anchor: the agent provider's JWKS.</p>
+            </div>
+            <div class="border border-slate-200 rounded-xl p-5">
+              <div class="font-semibold mb-2">3. The Agent as User-Proxy</div>
+              <p class="text-sm text-slate-600 leading-relaxed">AAuth, "Agent Auth" (Dick Hardt). The agent identifies the user through PII — name, email, credit card, medical ID. Then it can act with that user's scoped permissions. Trust anchor: the PII matching the auth server's user record.</p>
+            </div>
+            <div class="border border-slate-200 rounded-xl p-5">
+              <div class="font-semibold mb-2">4. The Agent as Wallet</div>
+              <p class="text-sm text-slate-600 leading-relaxed">x402 (Coinbase). The agent pays per request with USDC, signing transfers under a user-defined spending mandate. Trust anchor: the blockchain. Identity is implicit in the wallet address.</p>
+            </div>
+          </div>
+
+          <p class="text-slate-700 leading-relaxed mb-6">Notice what's missing? Across all four, the <em>agent itself</em> is not the principal. It's a client, a session, a proxy, a wallet. Its actions are always attributable to something else — the OAuth client registration, the upstream user, the credit card, the public key. None of them ask the question: what if the agent <em>is</em> the thing we want to identify?</p>
+
+          <p class="text-slate-700 leading-relaxed mb-6">That's the position AID takes. Each agent has its own Ed25519 keypair. It's not borrowed from a user, not proxied through a provider, not derived from a wallet balance. The agent's signature is the agent's identity. Full stop.</p>
+
+          <h2 id="what-you-lose" class="text-2xl md:text-3xl font-bold mt-12 mb-4">What You Lose When the Agent Has No Identity</h2>
+
+          <p class="text-slate-700 leading-relaxed mb-4">Three concrete losses:</p>
+
+          <p class="text-slate-700 leading-relaxed mb-4"><strong>1. Auditability collapses to the next layer up.</strong> Your access logs read <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">user=jane.doe@acme.com, client=openai-chatgpt</code>. Two different ChatGPT conversations Jane had today, doing two different things, are indistinguishable. The user did it. The agent provider mediated. The actual agent that made the call is invisible. For security incident response, fraud investigation, and SOC 2 audit trails, this isn't enough.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-4"><strong>2. Least privilege defaults to the user's privilege.</strong> If the agent operates as the user, its maximum scope is the user's scope. You can scope <em>down</em> at the assertion layer (auth.md does this well), but you can't easily scope <em>up</em> for the agent specifically. And the inverse fails completely: there's no way to give an agent a permission the user doesn't have, even when that's the right design — a customer-support agent should be able to look up <em>any</em> customer's order, not just orders belonging to "the user it's acting for."</p>
+
+          <p class="text-slate-700 leading-relaxed mb-6"><strong>3. Compromise blast radius scales with the intermediary, not the principal.</strong> Compromise an agent provider's signing key in the auth.md model, and you compromise <em>every delegation the provider ever issued</em>. The WorkOS docs explicitly flag this as security-critical configuration. Compromise an OAuth client registration in the DCR model, and every agent using that registration is compromised. With per-agent keys, compromise of one agent's key compromises that one agent. Containment is automatic.</p>
+
+          <h2 id="concrete-scenario" class="text-2xl md:text-3xl font-bold mt-12 mb-4">A Concrete Scenario: The Refund Audit</h2>
+
+          <p class="text-slate-700 leading-relaxed mb-4">Imagine you're running a customer-support platform. You have two agents:</p>
+
+          <ul class="text-slate-700 mb-4 space-y-2 list-disc list-inside">
+            <li><strong>tier1-triage:</strong> reads tickets, classifies them, can refund up to $50</li>
+            <li><strong>fraud-review:</strong> reads tickets, can read customer purchase history, can <em>not</em> refund</li>
+          </ul>
+
+          <p class="text-slate-700 leading-relaxed mb-4">Both agents are operated by the same admin user, Sarah. A $48 refund just went out for a customer claiming they didn't receive an order. Months later, the customer files a chargeback claiming the refund never reached them. Compliance asks: which agent processed this?</p>
+
+          <div class="grid md:grid-cols-2 gap-4 mb-6">
+            <div class="bg-slate-50 border border-slate-200 rounded-xl p-5">
+              <div class="font-mono font-bold text-slate-700 mb-2">Without per-agent identity</div>
+              <p class="text-sm text-slate-600 leading-relaxed">Your log says <code class="bg-slate-100 px-1 rounded">user=sarah, scope=refunds:write</code>. You know <em>Sarah's agent</em> did it. You don't know which one. Both have valid sessions because they both operate under Sarah. You go check internal correlation IDs, hope you logged the conversation ID, hope it's still in your trace store. Maybe you find it. Maybe you don't.</p>
+            </div>
+            <div class="bg-teal-50 border border-teal-200 rounded-xl p-5">
+              <div class="font-mono font-bold text-teal-700 mb-2">With per-agent identity</div>
+              <p class="text-sm text-teal-900 leading-relaxed">Your log says <code class="bg-teal-100 px-1 rounded">agent=tier1-triage@acme.local</code>. You know exactly which agent. You can also know — without checking — that it <em>wasn't</em> fraud-review, because fraud-review's role doesn't include <code class="bg-teal-100 px-1 rounded">refunds:write</code> at all. Token introspection at the time of the call would have denied it.</p>
+            </div>
+          </div>
+
+          <p class="text-slate-700 leading-relaxed mb-6">This isn't a contrived example. It's the exact shape of every agent-attribution incident response that's coming in the next two years. Per-agent identity isn't a luxury — it's the audit log you didn't realize you were going to need.</p>
+
+          <h2 id="what-identity-means" class="text-2xl md:text-3xl font-bold mt-12 mb-4">What "Agent Has Its Own Identity" Means in Practice</h2>
+
+          <p class="text-slate-700 leading-relaxed mb-4">In AID, "the agent has its own identity" is four concrete things:</p>
+
+          <ol class="text-slate-700 mb-6 space-y-3 list-decimal list-inside">
+            <li><strong>An Ed25519 keypair held by the agent.</strong> Generated on first run via <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">aid-init</code>. The private key never leaves the agent's machine.</li>
+            <li><strong>A human-readable address.</strong> <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">support-bot@acme.local</code>, <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">tier1-triage@acme.local</code>. The address appears in every token, every log entry, every introspection response.</li>
+            <li><strong>A signed proof on every token request.</strong> Not just at registration — every time the agent asks for a token, it signs a fresh timestamp + audience binding. The auth server verifies the signature against the public key it recorded at registration.</li>
+            <li><strong>A role-scoped envelope, set by a human at registration.</strong> The agent has scopes the user might not have, and the user can run agents with scopes narrower than their own. The two are decoupled.</li>
+          </ol>
+
+          <p class="text-slate-700 leading-relaxed mb-4">The crucial property is that <strong>none of these depend on a third party.</strong> No agent provider's JWKS. No OAuth client registration shared across deployments. No wallet balance. The auth server has one row per agent in a database — that's the whole trust anchor.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-6">This is why AID's reference implementation is four shell scripts. The model is small enough that it doesn't need a runtime.</p>
+
+          <h2 id="when-delegation" class="text-2xl md:text-3xl font-bold mt-12 mb-4">When Delegation IS the Right Model</h2>
+
+          <p class="text-slate-700 leading-relaxed mb-4">The honest answer: a lot of the time. We're not arguing per-agent identity is universally better — we're arguing it's the missing default, and the right model depends on deployment shape.</p>
+
+          <div class="overflow-x-auto mb-8">
+            <table class="w-full text-sm md:text-base border-collapse">
+              <thead class="border-b-2 border-slate-300">
+                <tr>
+                  <th class="text-left py-3 pr-4 font-semibold">Deployment</th>
+                  <th class="text-left py-3 px-4 font-semibold">Better fit</th>
+                  <th class="text-left py-3 pl-4 font-semibold">Why</th>
+                </tr>
+              </thead>
+              <tbody class="text-slate-700">
+                <tr class="border-b border-slate-200">
+                  <td class="py-3 pr-4 font-medium">ChatGPT calling Acme's API for Jane</td>
+                  <td class="py-3 px-4">Delegation (auth.md / ID-JAG)</td>
+                  <td class="py-3 pl-4">Acme doesn't know Jane. Provider JWKS bridges the gap.</td>
+                </tr>
+                <tr class="border-b border-slate-200">
+                  <td class="py-3 pr-4 font-medium">Long-lived support agent inside Acme</td>
+                  <td class="py-3 px-4">Per-agent identity (AID)</td>
+                  <td class="py-3 pl-4">Acme owns the agent. Admin grants scopes directly.</td>
+                </tr>
+                <tr class="border-b border-slate-200">
+                  <td class="py-3 pr-4 font-medium">CI/CD agent deploying code</td>
+                  <td class="py-3 px-4">Per-agent identity</td>
+                  <td class="py-3 pl-4">No user is involved. Service-account model.</td>
+                </tr>
+                <tr class="border-b border-slate-200">
+                  <td class="py-3 pr-4 font-medium">Personal coding agent on a developer's laptop</td>
+                  <td class="py-3 px-4">Either</td>
+                  <td class="py-3 pl-4">Per-agent identity gives clean per-laptop audit; delegation lowers setup friction.</td>
+                </tr>
+                <tr class="border-b border-slate-200">
+                  <td class="py-3 pr-4 font-medium">Multi-tenant SaaS spawning agents per customer</td>
+                  <td class="py-3 px-4">Per-agent identity</td>
+                  <td class="py-3 pl-4">Customer-level isolation is the entire product. One key per tenant agent.</td>
+                </tr>
+                <tr>
+                  <td class="py-3 pr-4 font-medium">Pay-per-call AI on the open web</td>
+                  <td class="py-3 px-4">Wallet (x402)</td>
+                  <td class="py-3 pl-4">Identity is irrelevant; settlement is the contract.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="text-slate-700 leading-relaxed mb-6">The pattern: <strong>delegation wins when the calling-party doesn't know the user; per-agent identity wins when the agent is a long-lived autonomous principal in a system the deployer controls.</strong> These are very different shapes. Picking the right one matters more than picking the "winning" protocol.</p>
+
+          <h2 id="compose-them" class="text-2xl md:text-3xl font-bold mt-12 mb-4">Why Not Both</h2>
+
+          <p class="text-slate-700 leading-relaxed mb-4">An agent doesn't have to pick. The interesting near-future is composition. Imagine an agent with:</p>
+
+          <ul class="text-slate-700 mb-4 space-y-2 list-disc list-inside">
+            <li><strong>A long-lived Ed25519 identity (AID).</strong> Its own keypair, its own role on the auth server, used for autonomous actions that don't involve a user.</li>
+            <li><strong>A short-lived user-delegation context (auth.md / ID-JAG).</strong> Acquired when a user explicitly hands the agent permission to do something on their behalf.</li>
+          </ul>
+
+          <p class="text-slate-700 leading-relaxed mb-4">When the agent acts autonomously — running its scheduled jobs, processing its inbox, doing the work a human granted it — its AID identity authenticates the call. When it acts on a user's request — "go book me a flight" — it presents both. The token carries both <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">agent_address</code> and <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">delegating_user</code>. Audit logs show both. Authorization can be either's intersection, depending on policy.</p>
+
+          <p class="text-slate-700 leading-relaxed mb-6">This isn't science fiction. The <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">aid_grant</code> block we <a href="/blog/aid-2026-roadmap/" class="text-teal-700 hover:underline">just shipped</a> sits side-by-side with auth.md's <code class="bg-slate-100 px-1.5 py-0.5 rounded text-sm">agent_auth</code> block on the same auth-server metadata document. A server that publishes both supports both. An agent that has both pulls whichever it needs. We're not trying to win — we're trying to fill the unoccupied position so the stack is complete.</p>
+
+          <h2 id="closing" class="text-2xl md:text-3xl font-bold mt-12 mb-4">Closing</h2>
+
+          <div class="bg-slate-50 border border-slate-200 rounded-xl p-6 mb-8">
+            <p class="text-slate-700 leading-relaxed mb-3">The agent-authentication landscape today is rich in delegation models and impoverished in identity models. Every public proposal teaches a service how to <em>trust an intermediary</em> — a provider, a wallet, an OAuth registration, a user assertion. None of them teach a service how to know the agent itself.</p>
+            <p class="text-slate-700 leading-relaxed mb-3">That's the gap AID fills. It's not the right answer for every shape — ChatGPT calling random services for Jane isn't going to work this way and shouldn't. But for autonomous, long-lived, audited agents inside systems we control, the agent-has-its-own-identity model is the missing default. The audit log you're going to wish you had built. The blast-radius containment you're going to wish you had picked.</p>
+            <p class="text-slate-700 leading-relaxed">Build for both. The agent that has its own keys <em>and</em> can carry user-delegation context is the agent that fits the most deployments. That's where the standards stack should land.</p>
+          </div>
+
+          <!-- Related posts -->
+          <aside class="mt-12 pt-8 border-t border-slate-200" aria-label="Related posts">
+            <h2 class="text-lg font-semibold text-slate-800 mb-4">Related reading</h2>
+            <div class="grid md:grid-cols-2 gap-4">
+              <a href="/blog/auth-md-vs-aid-complementary-layers/" class="block bg-slate-50 hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-xl p-4 transition-colors">
+                <div class="text-xs text-teal-700 font-medium mb-1">Comparison</div>
+                <div class="font-semibold text-slate-800">auth.md and AID: Complementary Layers, Not Competitors</div>
+                <p class="text-sm text-slate-600 mt-1">A close read of WorkOS auth.md and how it composes with AID.</p>
+              </a>
+              <a href="/blog/aid-2026-roadmap/" class="block bg-slate-50 hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-xl p-4 transition-colors">
+                <div class="text-xs text-teal-700 font-medium mb-1">Roadmap</div>
+                <div class="font-semibold text-slate-800">AID 2026 Roadmap: Discovery, RFCs, and the IETF</div>
+                <p class="text-sm text-slate-600 mt-1">What we just shipped, what's next, and how to get involved.</p>
+              </a>
+            </div>
+          </aside>
+
+        </div>
+      </div>
+    </article>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-slate-50 border-t border-slate-200 py-6 md:py-8">
+    <div class="max-w-6xl mx-auto px-4 md:px-6">
+      <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div class="flex items-center justify-center md:justify-start gap-2 text-slate-600">
+          <span class="font-mono font-bold text-teal-700">{AID}</span>
+          <span class="text-sm">Agent Identity Protocol</span>
+        </div>
+        <div class="flex flex-wrap items-center justify-center gap-4 md:gap-5 text-xs md:text-sm text-slate-500">
+          <a href="https://github.com/agentmessaging" class="hover:text-teal-700 transition-colors" title="GitHub" aria-label="GitHub">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          </a>
+          <a href="https://x.com/agentmessaging" class="hover:text-teal-700 transition-colors" title="X" aria-label="X (Twitter)">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <span class="text-slate-300">|</span>
+          <a href="https://github.com/agentmessaging/agent-identity/blob/main/LICENSE" class="hover:text-teal-700 transition-colors">MIT</a>
+          <span>By <a href="https://23blocks.com" class="text-slate-700 hover:text-teal-700 transition-colors">23blocks</a></span>
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

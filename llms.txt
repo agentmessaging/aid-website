@@ -136,9 +136,59 @@ All lifecycle endpoints use :unique_id (the agent's permanent UUID), not the tem
 - POST /agent_registrations/:unique_id/suspend — block token issuance
 - POST /agent_registrations/:unique_id/reactivate — restore access
 
+## Discovery (RFC 9728 / RFC 8414)
+
+As of AID v1.1 (May 2026), the protocol supports OAuth metadata discovery. An agent can find an AID-enabled auth server starting from just a resource URL.
+
+1. GET <resource>/.well-known/oauth-protected-resource (RFC 9728) — returns authorization_servers[]
+2. GET <auth_server>/.well-known/oauth-authorization-server (RFC 8414) — returns token_endpoint + aid_grant block
+
+The aid_grant block advertises AID-specific endpoints:
+- aid_version
+- registration_endpoint (admin-initiated registration)
+- registration_request_endpoint (agent-initiated registration)
+- code_resolution_endpoint
+- agent_authorization_uri
+- key_algorithms_supported (e.g. ["Ed25519"])
+- credential_types_supported
+
+The aid_grant block is intentionally shaped to sit side-by-side with WorkOS auth.md's agent_auth block on the same authorization-server metadata document. One auth server can support both protocols without conflict.
+
+Client commands: aid-discover --resource <url>, and aid-token/aid-request now accept --resource <url> as an alternative to --auth <url>.
+
+## Recent Blog Posts
+
+- AID 2026 Roadmap: Discovery, RFCs, and the IETF (2026-05-24) — https://agentids.org/blog/aid-2026-roadmap/
+  What just shipped (RFC 9728/8414 discovery), the standards we anchor to, and what's next.
+
+- Why Agents Need Their Own Cryptographic Identity (2026-05-24) — https://agentids.org/blog/why-agents-need-cryptographic-identity/
+  The unoccupied position in the agent-auth landscape. Every other proposal models the agent as a client, session, user-proxy, or wallet. AID gives the agent its own identity.
+
+- auth.md and AID: Complementary Layers, Not Competitors (2026-05-24) — https://agentids.org/blog/auth-md-vs-aid-complementary-layers/
+  A close read of WorkOS auth.md and how it composes with AID. Different abstraction layers, stackable rather than rivalrous.
+
+- Why We Implemented RFC 8628 for Agent Registration (2026-05-20) — https://agentids.org/blog/why-we-implemented-rfc-8628/
+  Headless agents can't receive an admin JWT. The OAuth 2.0 Device Authorization Grant gives them a way to request their own registration while keeping humans in control.
+
+- AID vs Agent Auth Protocol: Role-Based vs Capability-Based (2026-03-25) — https://agentids.org/blog/aid-vs-agent-auth-protocol/
+  Comparison with the Better Auth proposal. Role-based simplicity vs capability-based complexity.
+
+## RFCs AID References
+
+- RFC 6749 — OAuth 2.0 framework (AID is a custom grant type)
+- RFC 7515 / 7519 — JWS / JWT (issued tokens are RS256 JWTs)
+- RFC 7662 — Token Introspection (real-time validation and revocation)
+- RFC 8414 — Authorization Server Metadata (hosts the aid_grant block)
+- RFC 8628 — Device Authorization Grant (model for user_code, expires_in, interval)
+- RFC 8693 — Token Exchange (referenced for upcoming delegation chains)
+- RFC 9728 — Protected Resource Metadata (resource-server discovery)
+
 ## Links
 
 - Protocol specification: https://agentids.org
 - GitHub: https://github.com/agentmessaging/agent-identity
+- Reference auth server: https://github.com/23blocks-org/auth-api
 - Install: `curl -fsSL https://raw.githubusercontent.com/agentmessaging/agent-identity/main/install.sh | bash`
 - Related: Agent Messaging Protocol (AMP) — https://agentmessaging.org
+- Blog: https://agentids.org/blog/
+- X / Twitter: https://x.com/agentmessaging
