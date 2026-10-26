@@ -161,7 +161,7 @@
         <div class="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-full px-3 py-1 text-xs text-amber-800 mb-4">Draft profile, open for review</div>
         <h1 class="text-3xl md:text-5xl font-bold leading-tight mb-4 md:mb-6"><span class="gradient-text">Use AID agents in a system you already run</span></h1>
         <p class="text-base md:text-xl text-slate-600 leading-relaxed mb-4">Your company has a CRM, an ERP or a point-of-sale. You want an AI agent to work in it, without sharing a human's password and without building an agent identity server. This page says how that works, and for which systems it does not.</p>
-        <p class="text-sm md:text-base text-slate-600 leading-relaxed">The rules are in the <a href="https://github.com/agentmessaging/agent-identity/blob/feat/F005-relying-party-federation/docs/federation.md" class="text-teal-700 underline hover:text-teal-900">AID Federation Profile (draft 0.1)</a>, which is still an <a href="https://github.com/agentmessaging/agent-identity/pull/24" class="text-teal-700 underline hover:text-teal-900">open pull request</a>. Links on this page point at that branch and will move to <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">main</code> if it merges.</p>
+        <p class="text-sm md:text-base text-slate-600 leading-relaxed">The rules are in the <a href="https://github.com/agentmessaging/agent-identity/blob/main/docs/federation.md" class="text-teal-700 underline hover:text-teal-900">AID Federation Profile (draft 0.1)</a>, now merged into <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">main</code> as a draft (<a href="https://github.com/agentmessaging/agent-identity/pull/24" class="text-teal-700 underline hover:text-teal-900">pull request #24</a>). It is not a released part of the protocol and it can still change.</p>
       </div>
     </section>
 
@@ -239,7 +239,7 @@
           <div class="bg-white border border-amber-200 rounded-xl p-5 shadow-sm">
             <div class="font-semibold mb-2 text-amber-800">Draft</div>
             <ul class="list-disc pl-5 space-y-2 text-sm text-slate-600">
-              <li>The profile itself (draft 0.1), under review as an open pull request.</li>
+              <li>The profile itself (draft 0.1), merged as a draft and open to change.</li>
               <li>The status events format (suspended, deleted, reactivated, token revoked) is invented in the profile. It is not a standard. It is meant to be aligned with the OpenID Shared Signals Framework / CAEP, which has no agent profile yet.</li>
               <li>An issuer has to add things before this is safe for agents from outside a company, such as a token whose audience is the specific service.</li>
             </ul>
@@ -249,8 +249,8 @@
             <ul class="list-disc pl-5 space-y-2 text-sm text-slate-600">
               <li>The reference verifier: 42 tests.</li>
               <li>The reference gateway: 69 tests.</li>
-              <li>Two runnable demos: <a href="https://github.com/agentmessaging/agent-identity/tree/feat/F005-relying-party-federation/examples/legacy-system-demo" class="text-teal-700 hover:underline">an agent in a system that takes the token (kind A)</a> and <a href="https://github.com/agentmessaging/agent-identity/tree/feat/F005-relying-party-federation/examples/gateway-demo" class="text-teal-700 hover:underline">an agent in a system that only knows API keys, through a gateway (kind B)</a>.</li>
-              <li>One <a href="https://github.com/agentmessaging/agent-identity/blob/feat/F005-relying-party-federation/examples/real-issuer-e2e/README.md" class="text-teal-700 hover:underline">end-to-end run against a real issuer</a>, 19 checks, on its test environment.</li>
+              <li>Two runnable demos: <a href="https://github.com/agentmessaging/agent-identity/tree/main/examples/legacy-system-demo" class="text-teal-700 hover:underline">an agent in a system that takes the token (kind A)</a> and <a href="https://github.com/agentmessaging/agent-identity/tree/main/examples/gateway-demo" class="text-teal-700 hover:underline">an agent in a system that only knows API keys, through a gateway (kind B)</a>.</li>
+              <li>One <a href="https://github.com/agentmessaging/agent-identity/blob/main/examples/real-issuer-e2e/README.md" class="text-teal-700 hover:underline">end-to-end run against a real issuer</a>, 19 checks, on its test environment.</li>
             </ul>
           </div>
           <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
@@ -276,20 +276,20 @@
             <div class="font-semibold text-slate-800">Lola is a user in Acme's CRM: letting an AID agent into a system you already run</div>
             <p class="text-sm text-slate-600 mt-1">The same story told as a walk-through for a company with an existing CRM, ERP or POS.</p>
           </a>
-          <a href="https://github.com/agentmessaging/agent-identity/blob/feat/F005-relying-party-federation/docs/federation.md" class="block bg-white hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-xl p-4 transition-colors">
+          <a href="https://github.com/agentmessaging/agent-identity/blob/main/docs/federation.md" class="block bg-white hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-xl p-4 transition-colors">
             <div class="text-xs text-teal-700 font-medium mb-1">Draft profile</div>
             <div class="font-semibold text-slate-800">AID Federation Profile (draft 0.1)</div>
-            <p class="text-sm text-slate-600 mt-1">Verification steps, configuration, staying current, and what an issuer must add. Part of an open pull request.</p>
+            <p class="text-sm text-slate-600 mt-1">Verification steps, configuration, staying current, and what an issuer must add. Merged into main with the profile.</p>
           </a>
-          <a href="https://github.com/agentmessaging/agent-identity/blob/feat/F005-relying-party-federation/docs/gateway.md" class="block bg-white hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-xl p-4 transition-colors">
+          <a href="https://github.com/agentmessaging/agent-identity/blob/main/docs/gateway.md" class="block bg-white hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-xl p-4 transition-colors">
             <div class="text-xs text-teal-700 font-medium mb-1">Reference gateway</div>
             <div class="font-semibold text-slate-800">The hosted gateway for kind B systems</div>
             <p class="text-sm text-slate-600 mt-1">Credential vault, request flow, threat model and security checklist, including what still needs an independent review.</p>
           </a>
           <a href="https://github.com/agentmessaging/agent-identity/pull/24" class="block bg-white hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-xl p-4 transition-colors">
-            <div class="text-xs text-teal-700 font-medium mb-1">Review</div>
+            <div class="text-xs text-teal-700 font-medium mb-1">Discussion</div>
             <div class="font-semibold text-slate-800">Pull request #24</div>
-            <p class="text-sm text-slate-600 mt-1">Where the profile, verifier, gateway and demos are under review. Comments welcome.</p>
+            <p class="text-sm text-slate-600 mt-1">Where the profile, verifier, gateway and demos were reviewed and merged. Comments welcome.</p>
           </a>
         </div>
       </div>
