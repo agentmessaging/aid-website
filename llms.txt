@@ -156,7 +156,25 @@ The aid_grant block is intentionally shaped to sit side-by-side with WorkOS auth
 
 Client commands: aid-discover --resource <url>, and aid-token/aid-request now accept --resource <url> as an alternative to --auth <url>.
 
+## Using AID Agents in a System You Already Run (Federation, draft)
+
+Page: https://agentids.org/federation/
+Walk-through: https://agentids.org/blog/agent-as-a-user-in-your-old-system/
+Profile: https://github.com/agentmessaging/agent-identity/blob/feat/F005-relying-party-federation/docs/federation.md (draft 0.1, still an open pull request: https://github.com/agentmessaging/agent-identity/pull/24)
+
+The agent is a named user (for example "lola") in a system the company already runs (CRM, ERP, point-of-sale). The AID issuer proves the agent's identity. The company keeps the final authorization and entry is deny by default: an issuer not configured is refused, and an agent from outside the company's own tenant needs a grant naming a sponsor.
+
+Who it works for:
+- Kind A: the system can validate an OAuth 2.0 / OIDC access token (a signed JWT checked against the issuer's JWKS) itself and map a claim to one of its users. Works, no gateway needed.
+- Kind B: the system only has its own credentials (API key, basic auth, its own OAuth client). Needs a gateway in front that holds the credential and acts as the agent's user. The gateway holding credentials is a real security risk to weigh; self-hosting and least-privilege agent users are the main mitigations.
+- Kind C: no usable API (screen logins, SOAP with its own security, EDI, file drops). Not covered; the system would need changes.
+
+Status: the profile is a draft. The status events format is invented in the profile and is not a standard. Verified: reference verifier 42 tests, reference gateway 69 tests, two runnable demos, one end-to-end run against a real issuer (19 checks, test environment). Not verified: no independent security review of the gateway, no production deployment, status events only tested on localhost.
+
 ## Recent Blog Posts
+
+- Lola is a user in Acme's CRM: letting an AID agent into a system you already run (2026-10-25) — https://agentids.org/blog/agent-as-a-user-in-your-old-system/
+  The agent is a named user in an existing CRM/ERP/POS, the issuer proves identity, the company keeps the final say. Works for systems that validate tokens themselves, needs a risky gateway for systems with only their own credentials, does not cover the rest. Draft; what was and was not verified.
 
 - AID 2026 Roadmap: Discovery, RFCs, and the IETF (2026-05-24) — https://agentids.org/blog/aid-2026-roadmap/
   What just shipped (RFC 9728/8414 discovery), the standards we anchor to, and what's next.

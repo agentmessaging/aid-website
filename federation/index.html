@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Use AID agents in a system you already run | Agent Identity (AID)</title>
+  <meta name="description" content="How a company can let AID agents work in an existing CRM, ERP or point-of-sale as named users, keep the final authorization, and deny by default. Which systems this works with, which need a gateway, and which are not covered. Draft profile.">
+  <meta name="keywords" content="AID federation, relying party, agent as user, legacy system, CRM, ERP, POS, JWT validation, OAuth, gateway, agent authorization, deny by default">
+  <meta name="author" content="Agent Messaging">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+  <link rel="canonical" href="https://agentids.org/federation/">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Use AID agents in a system you already run | Agent Identity (AID)">
+  <meta property="og:description" content="How a company can let AID agents work in an existing CRM, ERP or point-of-sale as named users, keep the final authorization, and deny by default. Which systems this works with, which need a gateway, and which are not covered. Draft profile.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://agentids.org/federation/">
+  <meta property="og:site_name" content="Agent Identity (AID)">
+  <meta property="og:image" content="https://agentids.org/assets/images/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Agent Identity (AID) Protocol">
+  <meta property="og:locale" content="en_US">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@agentmessaging">
+  <meta name="twitter:creator" content="@jkpelaez">
+  <meta name="twitter:title" content="Use AID agents in a system you already run | Agent Identity (AID)">
+  <meta name="twitter:description" content="How a company can let AID agents work in an existing CRM, ERP or point-of-sale as named users, keep the final authorization, and deny by default. Which systems this works with, which need a gateway, and which are not covered. Draft profile.">
+  <meta name="twitter:image" content="https://agentids.org/assets/images/og-image.png">
+  <meta name="twitter:image:alt" content="Agent Identity (AID) Protocol">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Use AID agents in a system you already run",
+    "description": "How a company can let AID agents work in an existing CRM, ERP or point-of-sale as named users, keep the final authorization, and deny by default. Which systems this works with, which need a gateway, and which are not covered. Draft profile.",
+    "url": "https://agentids.org/federation/",
+    "inLanguage": "en-US",
+    "dateModified": "2026-10-25",
+    "author": {
+      "@type": "Organization",
+      "name": "Agent Messaging",
+      "url": "https://agentmessaging.org"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Agent Identity (AID)",
+      "url": "https://agentids.org"
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://agentids.org/federation/"
+    }
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://agentids.org/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Federation",
+        "item": "https://agentids.org/federation/"
+      }
+    ]
+  }
+  </script>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/apple-touch-icon.png">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Space Grotesk', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdfa', 100: '#ccfbf1', 200: '#99f6e4', 300: '#5eead4',
+              400: '#2dd4bf', 500: '#14b8a6', 600: '#0d9488', 700: '#0f766e',
+              800: '#115e59', 900: '#134e4a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .gradient-text {
+      background: linear-gradient(135deg, #0f766e 0%, #115e59 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .code-block { background: #1e293b; }
+    article h2 { scroll-margin-top: 5rem; }
+  </style>
+  <style>
+    .gradient-text {
+      background: linear-gradient(135deg, #0f766e 0%, #115e59 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-gradient {
+      background: radial-gradient(ellipse at top, rgba(20, 184, 166, 0.06) 0%, transparent 50%),
+                  radial-gradient(ellipse at bottom right, rgba(15, 118, 110, 0.04) 0%, transparent 50%);
+    }
+  </style>
+</head>
+<body class="bg-white text-slate-900 font-sans antialiased">
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:rounded focus:shadow-lg">Skip to content</a>
+
+  <!-- Navigation -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-lg border-b border-slate-200">
+    <div class="max-w-6xl mx-auto px-4 md:px-6 py-3">
+      <div class="flex items-center justify-between">
+        <a href="/" class="flex items-center gap-2 text-base md:text-xl font-mono font-bold text-teal-700">{AID}</a>
+        <div class="flex items-center gap-3 md:gap-6">
+          <a href="/#how-it-works" class="hidden md:block text-slate-900 hover:text-teal-700 transition-colors">How it Works</a>
+          <a href="/#features" class="hidden md:block text-slate-900 hover:text-teal-700 transition-colors">Features</a>
+          <a href="/#protocol" class="hidden md:block text-slate-900 hover:text-teal-700 transition-colors">Protocol</a>
+          <a href="/federation/" class="hidden sm:block text-teal-700 font-medium transition-colors text-sm md:text-base">Federation</a>
+          <a href="/blog/" class="text-slate-900 hover:text-teal-700 transition-colors text-sm md:text-base">Blog</a>
+          <a href="https://github.com/agentmessaging/agent-identity" class="text-slate-900 hover:text-teal-700 transition-colors" aria-label="GitHub">
+            <svg class="w-5 h-5 md:w-6 md:h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main-content">
+    <!-- Header -->
+    <section class="hero-gradient pt-20 md:pt-24 pb-8 md:pb-12">
+      <div class="max-w-4xl mx-auto px-4 md:px-6">
+        <div class="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-full px-3 py-1 text-xs text-amber-800 mb-4">Draft profile, open for review</div>
+        <h1 class="text-3xl md:text-5xl font-bold leading-tight mb-4 md:mb-6"><span class="gradient-text">Use AID agents in a system you already run</span></h1>
+        <p class="text-base md:text-xl text-slate-600 leading-relaxed mb-4">Your company has a CRM, an ERP or a point-of-sale. You want an AI agent to work in it, without sharing a human's password and without building an agent identity server. This page says how that works, and for which systems it does not.</p>
+        <p class="text-sm md:text-base text-slate-600 leading-relaxed">The rules are in the <a href="https://github.com/agentmessaging/agent-identity/blob/feat/F005-relying-party-federation/docs/federation.md" class="text-teal-700 underline hover:text-teal-900">AID Federation Profile (draft 0.1)</a>, which is still an <a href="https://github.com/agentmessaging/agent-identity/pull/24" class="text-teal-700 underline hover:text-teal-900">open pull request</a>. Links on this page point at that branch and will move to <code class="bg-slate-100 px-1.5 py-0.5 rounded text-xs">main</code> if it merges.</p>
+      </div>
+    </section>
+
+    <!-- Idea -->
+    <section class="py-12 md:py-16 bg-slate-50 border-t border-slate-200">
+      <div class="max-w-4xl mx-auto px-4 md:px-6">
+        <h2 class="text-2xl md:text-3xl font-bold mb-4">The idea</h2>
+        <div class="space-y-4 text-slate-700 leading-relaxed">
+          <p>The agent is a <strong>named user</strong> in the system you already run. Acme creates a user, say &ldquo;lola&rdquo;, in its CRM, with the permissions Lola should have, enforced by the CRM's own permission model. The CRM's audit log then says what Lola did, not what &ldquo;the integration&rdquo; did.</p>
+          <p>An AID <strong>issuer</strong> (for example 23blocks) registers the agent and proves it is really Lola: the agent signs with its Ed25519 key and receives a short-lived token meant for that system. The issuer does not decide what Lola may do.</p>
+          <p><strong>Acme keeps the final authorization.</strong> Which issuers it trusts, which agents may enter, and what they may do all stay Acme's data. Entry is <strong>deny by default</strong>: an agent from an issuer Acme has not configured is refused before any network call, and an agent from outside Acme's own tenant needs an explicit grant naming a sponsor at Acme. Scopes from the issuer are an input to Acme's decision, never a copy of it, and can only be narrowed.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Who it works for -->
+    <section id="who" class="py-12 md:py-16 border-t border-slate-200">
+      <div class="max-w-6xl mx-auto px-4 md:px-6">
+        <h2 class="text-2xl md:text-4xl font-bold text-center mb-3 md:mb-4">Who this works for</h2>
+        <p class="text-slate-600 text-center text-sm md:text-base max-w-2xl mx-auto mb-8 md:mb-12">It does not make an old system modern. Which of three kinds your system is decides everything.</p>
+        <div class="grid gap-4 md:grid-cols-3 md:gap-6">
+        <div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+          <div class="text-teal-700 font-mono font-bold mb-2">Kind A</div>
+          <h3 class="font-semibold mb-2">Takes the token itself</h3>
+          <div class="text-sm text-slate-600 space-y-2"><p><strong>Works, no gateway needed.</strong></p>
+          <p>The system can accept an OAuth 2.0 / OpenID Connect access token from an outside identity provider on its API: it validates a signed JWT (RS256) against the provider's published keys (JWKS), checks <code class="bg-slate-100 px-1 rounded text-xs">iss</code>, <code class="bg-slate-100 px-1 rounded text-xs">aud</code> and <code class="bg-slate-100 px-1 rounded text-xs">exp</code>, and maps a claim in the token to one of its own users.</p>
+          <p>Acme registers the issuer as a trusted identity provider in the system, creates the user, and maps the token to it. The system itself is unchanged.</p></div>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+          <div class="text-teal-700 font-mono font-bold mb-2">Kind B</div>
+          <h3 class="font-semibold mb-2">Only has its own credentials</h3>
+          <div class="text-sm text-slate-600 space-y-2"><p><strong>Works with a gateway in front, and the gateway is a real risk.</strong></p>
+          <p>The system has an API, but it only knows its own credentials (an API key, basic auth, its own OAuth client) and cannot check an outside token.</p>
+          <p>A gateway checks the agent's token, then calls the system as Lola using a credential it holds for her. The old system never learns a token was involved. The cost: <strong>the gateway holds the credentials</strong>. See below.</p></div>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-xl p-5 md:p-6 shadow-sm">
+          <div class="text-teal-700 font-mono font-bold mb-2">Kind C</div>
+          <h3 class="font-semibold mb-2">No usable API</h3>
+          <div class="text-sm text-slate-600 space-y-2"><p><strong>Not covered.</strong></p>
+          <p>Screen-and-password logins only, or only older protocols (SOAP with its own security, EDI, file drops). This version of the profile has no answer for these. They need changes: add an API, add token validation, or put a connector in front.</p></div>
+        </div>
+
+        </div>
+        <p class="text-sm text-slate-600 mt-6 max-w-3xl mx-auto">Two things that are not enough: a system that only offers browser single sign-on (SAML or OIDC login pages) does not by that accept a token on its API, and a system that checks tokens only from its own login server cannot trust another issuer until it can be pointed at one.</p>
+      </div>
+    </section>
+
+    <!-- Gateway risk -->
+    <section id="gateway" class="py-12 md:py-16 bg-slate-50 border-t border-slate-200">
+      <div class="max-w-4xl mx-auto px-4 md:px-6">
+        <h2 class="text-2xl md:text-3xl font-bold mb-4">If you need a gateway (kind B), weigh this first</h2>
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-5 md:p-6 mb-6">
+          <p class="text-sm md:text-base text-amber-900 font-medium mb-1">A gateway holds your credentials for the old system.</p>
+          <p class="text-sm text-amber-800">Anyone who compromises the gateway host and gets its master key can act in the old system as every agent user it holds a credential for. Encryption at rest protects a stolen vault file, not a stolen running host. This is the central risk of the design, and the gateway documentation says so in the same words.</p>
+        </div>
+        <p class="text-slate-700 leading-relaxed mb-3">The mitigations the reference gateway documents, most effective first:</p>
+        <ul class="list-disc pl-6 space-y-2 text-slate-700 leading-relaxed mb-4">
+          <li>Run the gateway yourself, inside your network, so the credentials never leave you.</li>
+          <li>Give each agent user the least privilege that works in the old system. A stolen credential is then worth only that.</li>
+          <li>Prefer systems where the credential is an OAuth client, so what travels is a short-lived access token.</li>
+          <li>One process, one data directory and one master key per tenant.</li>
+          <li>Let the old system accept the agent users only from the gateway's address, and alert when one acts from anywhere else.</li>
+        </ul>
+        <p class="text-slate-700 leading-relaxed">Whatever the gateway does, the old system's own permissions for the agent user are the ceiling. The gateway can only narrow them.</p>
+      </div>
+    </section>
+
+    <!-- Status -->
+    <section id="status" class="py-12 md:py-16 border-t border-slate-200">
+      <div class="max-w-4xl mx-auto px-4 md:px-6">
+        <h2 class="text-2xl md:text-3xl font-bold mb-6">What is a draft, what was verified, what was not</h2>
+        <div class="grid gap-4 md:grid-cols-3 md:gap-6">
+          <div class="bg-white border border-amber-200 rounded-xl p-5 shadow-sm">
+            <div class="font-semibold mb-2 text-amber-800">Draft</div>
+            <ul class="list-disc pl-5 space-y-2 text-sm text-slate-600">
+              <li>The profile itself (draft 0.1), under review as an open pull request.</li>
+              <li>The status events format (suspended, deleted, reactivated, token revoked) is invented in the profile. It is not a standard. It is meant to be aligned with the OpenID Shared Signals Framework / CAEP, which has no agent profile yet.</li>
+              <li>An issuer has to add things before this is safe for agents from outside a company, such as a token whose audience is the specific service.</li>
+            </ul>
+          </div>
+          <div class="bg-white border border-teal-200 rounded-xl p-5 shadow-sm">
+            <div class="font-semibold mb-2 text-teal-800">Verified</div>
+            <ul class="list-disc pl-5 space-y-2 text-sm text-slate-600">
+              <li>The reference verifier: 42 tests.</li>
+              <li>The reference gateway: 69 tests.</li>
+              <li>Two runnable demos: <a href="https://github.com/agentmessaging/agent-identity/tree/feat/F005-relying-party-federation/examples/legacy-system-demo" class="text-teal-700 hover:underline">an agent in a system that takes the token (kind A)</a> and <a href="https://github.com/agentmessaging/agent-identity/tree/feat/F005-relying-party-federation/examples/gateway-demo" class="text-teal-700 hover:underline">an agent in a system that only knows API keys, through a gateway (kind B)</a>.</li>
+              <li>One <a href="https://github.com/agentmessaging/agent-identity/blob/feat/F005-relying-party-federation/examples/real-issuer-e2e/README.md" class="text-teal-700 hover:underline">end-to-end run against a real issuer</a>, 19 checks, on its test environment.</li>
+            </ul>
+          </div>
+          <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+            <div class="font-semibold mb-2 text-slate-800">Not verified</div>
+            <ul class="list-disc pl-5 space-y-2 text-sm text-slate-600">
+              <li>No independent security review of the gateway.</li>
+              <li>No production deployment, of anything here.</li>
+              <li>Status events were only delivered on localhost, over plain http.</li>
+              <li>No load testing. The gateway is a single process with in-memory limits.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Read more -->
+    <section class="py-12 md:py-16 bg-slate-50 border-t border-slate-200">
+      <div class="max-w-4xl mx-auto px-4 md:px-6">
+        <h2 class="text-2xl md:text-3xl font-bold mb-6">Read more</h2>
+        <div class="grid gap-4 md:grid-cols-2">
+          <a href="/blog/agent-as-a-user-in-your-old-system/" class="block bg-white hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-xl p-4 transition-colors">
+            <div class="text-xs text-teal-700 font-medium mb-1">Blog</div>
+            <div class="font-semibold text-slate-800">Lola is a user in Acme's CRM: letting an AID agent into a system you already run</div>
+            <p class="text-sm text-slate-600 mt-1">The same story told as a walk-through for a company with an existing CRM, ERP or POS.</p>
+          </a>
+          <a href="https://github.com/agentmessaging/agent-identity/blob/feat/F005-relying-party-federation/docs/federation.md" class="block bg-white hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-xl p-4 transition-colors">
+            <div class="text-xs text-teal-700 font-medium mb-1">Draft profile</div>
+            <div class="font-semibold text-slate-800">AID Federation Profile (draft 0.1)</div>
+            <p class="text-sm text-slate-600 mt-1">Verification steps, configuration, staying current, and what an issuer must add. Part of an open pull request.</p>
+          </a>
+          <a href="https://github.com/agentmessaging/agent-identity/blob/feat/F005-relying-party-federation/docs/gateway.md" class="block bg-white hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-xl p-4 transition-colors">
+            <div class="text-xs text-teal-700 font-medium mb-1">Reference gateway</div>
+            <div class="font-semibold text-slate-800">The hosted gateway for kind B systems</div>
+            <p class="text-sm text-slate-600 mt-1">Credential vault, request flow, threat model and security checklist, including what still needs an independent review.</p>
+          </a>
+          <a href="https://github.com/agentmessaging/agent-identity/pull/24" class="block bg-white hover:bg-teal-50 border border-slate-200 hover:border-teal-300 rounded-xl p-4 transition-colors">
+            <div class="text-xs text-teal-700 font-medium mb-1">Review</div>
+            <div class="font-semibold text-slate-800">Pull request #24</div>
+            <p class="text-sm text-slate-600 mt-1">Where the profile, verifier, gateway and demos are under review. Comments welcome.</p>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-slate-50 border-t border-slate-200 py-6 md:py-8">
+    <div class="max-w-6xl mx-auto px-4 md:px-6">
+      <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div class="flex items-center justify-center md:justify-start gap-2 text-slate-600">
+          <span class="font-mono font-bold text-teal-700">{AID}</span>
+          <span class="text-sm">Agent Identity Protocol</span>
+        </div>
+        <div class="flex flex-wrap items-center justify-center gap-4 md:gap-5 text-xs md:text-sm text-slate-500">
+          <a href="https://github.com/agentmessaging" class="hover:text-teal-700 transition-colors" title="GitHub" aria-label="GitHub">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          </a>
+          <a href="https://x.com/agentmessaging" class="hover:text-teal-700 transition-colors" title="X" aria-label="X (Twitter)">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <span class="text-slate-300">|</span>
+          <a href="https://github.com/agentmessaging/agent-identity/blob/main/LICENSE" class="hover:text-teal-700 transition-colors">MIT</a>
+          <span>By <a href="https://23blocks.com" class="text-slate-700 hover:text-teal-700 transition-colors">23blocks</a></span>
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
