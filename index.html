@@ -226,6 +226,7 @@
           <a href="#how-it-works" class="hidden md:block text-slate-900 hover:text-teal-700 transition-colors">How it Works</a>
           <a href="#features" class="hidden md:block text-slate-900 hover:text-teal-700 transition-colors">Features</a>
           <a href="#protocol" class="hidden md:block text-slate-900 hover:text-teal-700 transition-colors">Protocol</a>
+          <a href="/federation/" class="hidden sm:block text-slate-900 hover:text-teal-700 transition-colors text-sm md:text-base">Federation</a>
           <a href="/blog/" class="text-slate-900 hover:text-teal-700 transition-colors text-sm md:text-base">Blog</a>
           <a href="https://agentmessaging.org" class="hidden sm:block text-slate-900 hover:text-teal-700 transition-colors text-sm md:text-base">AMP</a>
           <a href="https://github.com/agentmessaging/agent-identity" class="text-slate-900 hover:text-teal-700 transition-colors">
@@ -907,6 +908,20 @@
             <p class="text-sm text-teal-800">MCP connects agents to tools. A2A connects agents to agents. AID proves who each agent is. Use AID as the identity layer, MCP for tool access, and A2A for agent coordination.</p>
           </div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Federation -->
+  <section id="federation" class="py-12 md:py-24 border-t border-slate-200">
+    <div class="max-w-4xl mx-auto px-4 md:px-6">
+      <div class="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-full px-3 py-1 text-xs text-amber-800 mb-4">Draft profile, open for review</div>
+      <h2 class="text-2xl md:text-4xl font-bold mb-3 md:mb-4">Use AID agents in a system you already run</h2>
+      <p class="text-slate-600 text-sm md:text-base mb-4">Make the agent a named user (say, &ldquo;lola&rdquo;) in your existing CRM, ERP or point-of-sale. The issuer proves who the agent is; your company keeps the final authorization, and entry is deny by default.</p>
+      <p class="text-slate-600 text-sm md:text-base mb-6">It works for systems that can validate a JWT or OAuth token themselves. Systems that only have their own credentials need a gateway in front, which holds the credential and is a real risk to weigh. Systems with no usable API are not covered.</p>
+      <div class="flex flex-wrap gap-3">
+        <a href="/federation/" class="bg-teal-700 hover:bg-teal-800 text-white px-4 md:px-6 py-2.5 md:py-3 rounded-lg font-medium transition-colors text-sm md:text-base">Who it works for</a>
+        <a href="/blog/agent-as-a-user-in-your-old-system/" class="bg-white hover:bg-slate-50 border border-slate-300 px-4 md:px-6 py-2.5 md:py-3 rounded-lg font-medium transition-colors text-sm md:text-base">Read the walk-through</a>
       </div>
     </div>
   </section>
