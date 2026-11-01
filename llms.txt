@@ -208,5 +208,7 @@ Status: the profile is a draft. The status events format is invented in the prof
 - Reference auth server: https://github.com/23blocks-org/auth-api
 - Install: `curl -fsSL https://raw.githubusercontent.com/agentmessaging/agent-identity/main/install.sh | bash`
 - Related: Agent Messaging Protocol (AMP) — https://agentmessaging.org
+- Related: Agent Actions Protocol (AAP) — https://agentactions.org
+- Related: Agent Files Protocol (AFP) — https://agentfiles.org
 - Blog: https://agentids.org/blog/
 - X / Twitter: https://x.com/agentmessaging
